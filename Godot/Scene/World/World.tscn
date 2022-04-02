@@ -1,11 +1,19 @@
+<<<<<<< HEAD
 [gd_scene load_steps=11 format=2]
+=======
+[gd_scene load_steps=10 format=2]
+>>>>>>> 5052e811fb0a8ef5b3d825fe86e922631f96c3d4
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/GodotApi.gdns" type="Script" id=2]
 [ext_resource path="res://Native/Terrain.gdns" type="Script" id=3]
+<<<<<<< HEAD
 [ext_resource path="res://Textures/Grass/Stylized_Grass_003_basecolor.jpg" type="Texture" id=4]
 [ext_resource path="res://Textures/Blight/Ground_Dirt_009_BaseColor.jpg" type="Texture" id=5]
 [ext_resource path="res://Environment/Environment.tres" type="Environment" id=6]
+=======
+[ext_resource path="res://Scene/World/Spatials.tscn" type="PackedScene" id=4]
+>>>>>>> 5052e811fb0a8ef5b3d825fe86e922631f96c3d4
 
 [sub_resource type="PlaneMesh" id=4]
 size = Vector2( 3.085, 2 )
@@ -62,6 +70,7 @@ skeleton = NodePath("../..")
 material/0 = SubResource( 3 )
 
 [node name="Camera" type="Camera" parent="."]
+<<<<<<< HEAD
 transform = Transform( 1, 0, 0, 0, 0.662476, 0.749083, 0, -0.749083, 0.662476, 1.1921e-07, 1.39662, 1.54182 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -69,3 +78,8 @@ environment = ExtResource( 6 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 0.883668, -0.105621, -0.456044, 0.468115, 0.199383, 0.86088, 0, -0.974213, 0.225631, 0, 0, 0 )
+=======
+transform = Transform( 1, 0, 0, 0, 0.662476, 0.749083, 0, -0.749083, 0.662476, -1.19209e-07, 2.02321, 2.31921 )
+
+[node name="Spatials" parent="." instance=ExtResource( 4 )]
+>>>>>>> 5052e811fb0a8ef5b3d825fe86e922631f96c3d4
