@@ -151,4 +151,17 @@ impl Terrain {
 		};
 		self.array.query_shape_avg(circle)
 	}
+
+	/// Cleans a circle from blight 
+	#[export]
+	pub fn clean_circle(&mut self, _base: &Node, center: Vector3, radius: f32) {
+		let center_grid = self.world2grid(center);
+		let radius_grid = ((radius / self.measurements.plane_size.x) * 256.0) as usize;
+		let circle = Shape::Circle {
+			center: center_grid,
+			radius: radius_grid,
+		};
+		self.array.fill_shape(circle, CLEAN);
+	}
+
 }
