@@ -1,10 +1,17 @@
 use gdnative::prelude::*;
 
-use crate::VectorExt;
+use crate::Vector2Ext;
 use rstar::{RTreeObject, AABB};
 
-struct Structure {
+#[derive(Debug)]
+pub struct Structure {
 	position: Vector2,
+}
+
+impl Structure {
+	pub fn new(position: Vector2) -> Structure {
+		Self { position }
+	}
 }
 
 impl RTreeObject for Structure {
