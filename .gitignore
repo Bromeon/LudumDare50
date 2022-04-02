@@ -1,0 +1,19 @@
+# General
+ignore
+
+# Godot
+*.import
+/logs
+/Godot/Native/Structs
+
+# Rust
+target
+.idea
+.vscode
+/Rust/src/godot/structs/mod.rs
+
+# Assets
+*.psd
+*.blend
+*.blend1
+*.gltf
