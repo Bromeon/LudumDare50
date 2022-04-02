@@ -17,6 +17,9 @@ impl Structure {
 	pub fn instance_id(&self) -> i64 {
 		self.id
 	}
+	pub fn position(&self) -> Vector2 {
+		self.position
+	}
 }
 
 impl RTreeObject for Structure {

@@ -9,7 +9,7 @@ use crate::{Vector2Ext, Vector3Ext};
 #[derive(NativeClass, Debug)]
 #[inherit(Spatial)]
 pub struct SpatialObjects {
-	structures_by_id: HashMap<i64, Structure>,
+	//structures_by_id: HashMap<i64, Structure>,
 	rtree: RTree<Structure>,
 }
 
@@ -19,7 +19,7 @@ impl SpatialObjects {
 		godot_print!("Spatials is instantiated.");
 
 		Self {
-			structures_by_id: HashMap::new(),
+			//structures_by_id: HashMap::new(),
 			rtree: RTree::new(),
 		}
 	}
@@ -47,8 +47,12 @@ impl SpatialObjects {
 		let p2 = (center + half_size).to_rstar();
 
 		let aabb = AABB::from_corners(p1, p2);
+		println!("Query {:?}", aabb);
+
+		let radius_sq = radius * radius;
 		self.rtree
-			.locate_in_envelope_intersecting(&aabb)
+			.locate_in_envelope(&aabb)
+			.filter(|stc| stc.position().distance_squared_to(center) < radius_sq)
 			.map(|stc| stc.instance_id())
 			.collect()
 	}
@@ -57,7 +61,8 @@ impl SpatialObjects {
 		let stc = Structure::new(pos, id);
 		godot_print!("Add structure {}: {:?}", id, stc);
 
-		self.structures_by_id.insert(id, stc);
+		//self.structures_by_id.insert(id, stc);
+		self.rtree.insert(stc);
 	}
 }
 
