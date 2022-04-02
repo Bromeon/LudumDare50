@@ -10,4 +10,3 @@ pub fn register_classes(handle: gdnative::init::InitHandle) {
 	handle.add_class::<GodotApi>();
 	handle.add_class::<LittleStruct>();
 }
-

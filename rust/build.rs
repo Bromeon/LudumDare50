@@ -7,8 +7,18 @@ use std::path::PathBuf;
 use heck::{ToSnakeCase, ToUpperCamelCase};
 
 macro_rules! class {
-    ($name:ident) => { Class { name: stringify!($name).to_string(), base: "Reference".to_string() }};
-    ($name:ident : $base:ident) => { Class { name: stringify!($name).to_string(), base: stringify!($base).to_string() }};
+	($name:ident) => {
+		Class {
+			name: stringify!($name).to_string(),
+			base: "Reference".to_string(),
+		}
+	};
+	($name:ident : $base:ident) => {
+		Class {
+			name: stringify!($name).to_string(),
+			base: stringify!($base).to_string(),
+		}
+	};
 }
 
 fn main() {
@@ -16,18 +26,13 @@ fn main() {
 		godot_gdns_dir: PathBuf::from("../Godot/Native"),
 		godot_gdnlib_res_path: PathBuf::from("res://Native/NativeLib.gdnlib"),
 		rust_class_dir: PathBuf::from("src/godot"),
-		classes: vec![
-			class!(GodotApi : Node),
-			class!(LittleStruct),
-		],
+		classes: vec![class!(GodotApi: Node), class!(LittleStruct)],
 	};
 
 	sync(cfg).expect("Sync configured correctly");
 }
 
-
 // ----------------------------------------------------------------------------------------------------------------------------------------------
-
 
 fn sync(cfg: NativeClasses) -> Result<(), std::io::Error> {
 	validate(&cfg)?;
@@ -91,7 +96,6 @@ fn sync(cfg: NativeClasses) -> Result<(), std::io::Error> {
 
 	fs::write(mod_path, make_rust_mod(&cfg.classes))?;
 
-
 	Ok(())
 }
 
@@ -108,7 +112,8 @@ library = ExtResource( 1 )
 script_class_name = "{name}"
 "#,
 		gdnlib = cfg.godot_gdnlib_res_path.display(),
-		name = class.name)
+		name = class.name
+	)
 }
 
 fn make_rust_class(class: &Class) -> String {
@@ -161,7 +166,6 @@ fn make_rust_mod(classes: &[Class]) -> String {
 
 pub fn register_classes(handle: gdnative::init::InitHandle) {{{registers}
 }}
-
 "#,
 		mods = mods,
 		uses = uses,

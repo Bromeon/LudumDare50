@@ -1,5 +1,5 @@
-use gdnative::prelude::*;
 use crate::world::World;
+use gdnative::prelude::*;
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -9,21 +9,14 @@ pub struct GodotApi {
 	world: Option<World>, // late-init
 }
 
-
 #[methods]
 impl GodotApi {
 	fn new(_owner: &Node) -> Self {
-		Self {
-			world: None,
-		}
+		Self { world: None }
 	}
 
 	#[export]
-	fn initialize(
-		&mut self,
-		_owner: &Node,
-		string: String
-	) {
+	fn initialize(&mut self, _owner: &Node, string: String) {
 		self.world = Some(World::new());
 		godot_print!("Hello from Rust: {string}")
 	}
