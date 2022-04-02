@@ -9,7 +9,7 @@
 [ext_resource path="res://Textures/Grass/Stylized_Grass_003_basecolor.jpg" type="Texture" id=7]
 
 [sub_resource type="PlaneMesh" id=4]
-size = Vector2( 3.085, 2 )
+size = Vector2( 5, 5 )
 subdivide_width = 10
 
 [sub_resource type="Shader" id=6]
@@ -63,7 +63,7 @@ skeleton = NodePath("../..")
 material/0 = SubResource( 3 )
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.355792, 0.934565, 0, -0.934565, 0.355792, 0, 2.29793, 1.14319 )
+transform = Transform( 1, 0, 0, 0, 0.355792, 0.934565, 0, -0.934565, 0.355792, 0, 3.58399, 2.30405 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource( 6 )
