@@ -18,19 +18,17 @@ impl Spatials {
 
 	#[export]
 	fn load(&self, base: &Spatial, scene: Ref<PackedScene>) {
-		for pos in random_positions(16) {
+		for _pos in random_positions(16) {
 			let instanced = scene.instance(0).unwrap();
-			let instanced = instanced.cast::<Spatial>().unwrap();
+			let instanced = instanced.cast::<Spatial>();
 
 			base.add_child(instanced, false);
 		}
-
 	}
 }
 
-
 fn random_positions(n: usize) -> Vec<Vector2> {
-	let  mut dist = rand::distributions::Uniform::new(-10.0, 10.0);
+	let dist = rand::distributions::Uniform::new(-10.0, 10.0);
 
 	//rand::thread_rng().g
 	let mut result = vec![];

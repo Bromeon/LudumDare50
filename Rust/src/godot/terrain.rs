@@ -1,5 +1,5 @@
 use gdnative::{
-	api::{GlobalConstants, ImageTexture, Mesh, MeshInstance, PlaneMesh, ShaderMaterial},
+	api::{ImageTexture, MeshInstance, ShaderMaterial},
 	prelude::*,
 };
 use noise::{NoiseFn, Perlin};
@@ -18,7 +18,6 @@ macro_rules! get_node {
 				.get_node($path)
 				.unwrap()
 				.cast::<$typ>()
-				.unwrap()
 				.assume_shared()
 		}
 	};
@@ -42,8 +41,8 @@ impl Terrain {
 			.unwrap()
 			.get_surface_material(0)
 			.unwrap()
-			.cast::<ShaderMaterial>()
-			.unwrap();
+			.cast::<ShaderMaterial>();
+
 		let texture = material
 			.get_shader_param("Splatmap")
 			.try_to_object::<ImageTexture>()
