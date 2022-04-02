@@ -1,15 +1,16 @@
 use gdnative::prelude::*;
 use rand::Rng;
+use crate::VectorExt;
 
 #[derive(NativeClass, Debug, Default)]
 #[inherit(Spatial)]
-pub struct Spatials {
+pub struct SpatialObjects {
 	#[property]
 	pub unimplemented: i32,
 }
 
 #[methods]
-impl Spatials {
+impl SpatialObjects {
 	fn new(_base: &Spatial) -> Self {
 		godot_print!("Spatials is instantiated.");
 
@@ -18,11 +19,14 @@ impl Spatials {
 
 	#[export]
 	fn load(&self, base: &Spatial, scene: Ref<PackedScene>) {
-		for _pos in random_positions(16) {
+		for pos in random_positions(16) {
 			let instanced = scene.instance(0).unwrap();
 			let instanced = instanced.cast::<Spatial>();
+			instanced.set_translation(pos.to_3d());
 
 			base.add_child(instanced, false);
+
+			godot_print!("Created structure at {:?}", pos);
 		}
 	}
 }

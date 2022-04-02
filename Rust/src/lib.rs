@@ -22,11 +22,16 @@ impl MyDisplay for Vector2 {
 // Add extension functions here
 trait VectorExt {
 	fn to_rstar(self) -> [f32; 2];
+	fn to_3d(self) -> Vector3;
 }
 
 impl VectorExt for Vector2 {
 	fn to_rstar(self) -> [f32; 2] {
 		[self.x, self.y]
+	}
+
+	fn to_3d(self) -> Vector3 {
+		Vector3::new(self.x, 0.0, self.y)
 	}
 }
 
