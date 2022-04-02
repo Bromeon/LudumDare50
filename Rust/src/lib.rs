@@ -36,10 +36,16 @@ impl Vector2Ext for Vector2 {
 }
 
 trait Vector3Ext {
+	fn to_rstar(self) -> [f32; 2];
 	fn to_2d(self) -> Vector2;
 }
 
 impl Vector3Ext for Vector3 {
+	// Note: 2D point is intended
+	fn to_rstar(self) -> [f32; 2] {
+		[self.x, self.z]
+	}
+
 	fn to_2d(self) -> Vector2 {
 		Vector2::new(self.x, self.z)
 	}

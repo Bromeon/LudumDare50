@@ -1,15 +1,16 @@
 use gdnative::prelude::*;
 use rand::Rng;
+use rstar::{RTree, AABB};
 use std::collections::HashMap;
 
 use crate::objects::Structure;
-use crate::VariantType::Int32Array;
-use crate::Vector2Ext;
+use crate::{Vector2Ext, Vector3Ext};
 
-#[derive(NativeClass, Debug, Default)]
+#[derive(NativeClass, Debug)]
 #[inherit(Spatial)]
 pub struct SpatialObjects {
 	structures_by_id: HashMap<i64, Structure>,
+	rtree: RTree<Structure>,
 }
 
 #[methods]
@@ -17,7 +18,10 @@ impl SpatialObjects {
 	fn new(_base: &Spatial) -> Self {
 		godot_print!("Spatials is instantiated.");
 
-		Self::default()
+		Self {
+			structures_by_id: HashMap::new(),
+			rtree: RTree::new(),
+		}
 	}
 
 	#[export]
@@ -30,16 +34,30 @@ impl SpatialObjects {
 			instanced.set_translation(pos.to_3d());
 			base.add_child(instanced, false);
 
-			let stc = Structure::new(pos);
-
-			godot_print!("Created structure {}: {:?}", id, stc);
-			self.structures_by_id.insert(id, stc);
+			self.add_structure(id, pos);
 		}
 	}
 
 	#[export]
 	fn query_radius(&self, _base: &Spatial, position3d: Vector3, radius: f32) -> Vec<i64> {
-		self.structures_by_id.keys().copied().collect()
+		//self.structures_by_id.keys().copied().collect()
+		let half_size = Vector2::ONE * 0.5 * radius;
+		let center = position3d.to_2d();
+		let p1 = (center - half_size).to_rstar();
+		let p2 = (center + half_size).to_rstar();
+
+		let aabb = AABB::from_corners(p1, p2);
+		self.rtree
+			.locate_in_envelope_intersecting(&aabb)
+			.map(|stc| stc.instance_id())
+			.collect()
+	}
+
+	fn add_structure(&mut self, id: i64, pos: Vector2) {
+		let stc = Structure::new(pos, id);
+		godot_print!("Add structure {}: {:?}", id, stc);
+
+		self.structures_by_id.insert(id, stc);
 	}
 }
 

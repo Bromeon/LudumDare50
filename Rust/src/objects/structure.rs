@@ -6,11 +6,16 @@ use rstar::{RTreeObject, AABB};
 #[derive(Debug)]
 pub struct Structure {
 	position: Vector2,
+	id: i64,
 }
 
 impl Structure {
-	pub fn new(position: Vector2) -> Structure {
-		Self { position }
+	pub fn new(position: Vector2, id: i64) -> Structure {
+		Self { position, id }
+	}
+
+	pub fn instance_id(&self) -> i64 {
+		self.id
 	}
 }
 
