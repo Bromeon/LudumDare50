@@ -21,5 +21,4 @@ impl MyDisplay for Vector2 {
 #[allow(dead_code)]
 fn compile_test() {
 	let _ = godot::LittleStruct { unimplemented: 77 };
-
 }
