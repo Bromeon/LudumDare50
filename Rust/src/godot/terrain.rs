@@ -2,7 +2,7 @@ use gdnative::{
 	api::{ImageTexture, MeshInstance, ShaderMaterial},
 	prelude::*,
 };
-use ndarray::{s, Array2};
+use ndarray::s;
 
 use terrain_array::*;
 

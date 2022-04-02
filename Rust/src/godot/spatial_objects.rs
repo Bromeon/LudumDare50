@@ -1,7 +1,7 @@
 use gdnative::prelude::*;
 use rand::Rng;
 use rstar::{RTree, AABB};
-use std::collections::HashMap;
+//use std::collections::HashMap;
 
 use crate::objects::Structure;
 use crate::{Vector2Ext, Vector3Ext};
@@ -62,6 +62,7 @@ impl SpatialObjects {
 			.collect()
 	}
 
+	#[allow(dead_code)]
 	fn add_structure(&mut self, stc: Structure) {
 		godot_print!("Add structure {:?}", stc);
 
