@@ -11,6 +11,7 @@ crate-type = ["cdylib"]
 [dependencies]
 # I need formatted feature because CLion doesn't index symbols otherwise :( 
 gdnative = { git = "https://github.com/Bromeon/godot-rust.git", branch = "yolo", features = ["formatted"] }
+noise = "0.7"
 
 [build-dependencies]
 heck = "0.4.0"

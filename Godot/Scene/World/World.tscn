@@ -1,42 +1,34 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/GodotApi.gdns" type="Script" id=2]
 [ext_resource path="res://Native/Terrain.gdns" type="Script" id=3]
+[ext_resource path="res://Textures/Grass/Stylized_Grass_003_basecolor.jpg" type="Texture" id=4]
+[ext_resource path="res://Textures/Blight/Ground_Dirt_009_BaseColor.jpg" type="Texture" id=5]
+[ext_resource path="res://Environment/Environment.tres" type="Environment" id=6]
 
 [sub_resource type="PlaneMesh" id=4]
 size = Vector2( 3.085, 2 )
 subdivide_width = 10
 
-[sub_resource type="VisualShaderNodeTextureUniform" id=1]
-uniform_name = "Splatmap"
-
-[sub_resource type="VisualShader" id=2]
+[sub_resource type="Shader" id=6]
 code = "shader_type spatial;
 render_mode specular_schlick_ggx;
 
 uniform sampler2D Splatmap;
+uniform sampler2D Grass;
+uniform sampler2D Blight;
 
+uniform float Grass_Scale = 10.0;
+uniform float Blight_Scale = 10.0;
 
-
-void vertex() {
-// Output:0
-
-}
+void vertex() {}
 
 void fragment() {
-// TextureUniform:3
-	vec3 n_out3p0;
-	float n_out3p1;
-	{
-		vec4 n_tex_read = texture(Splatmap, UV.xy);
-		n_out3p0 = n_tex_read.rgb;
-		n_out3p1 = n_tex_read.a;
-	}
-
-// Output:0
-	ALBEDO = n_out3p0;
-
+    vec4 splat = texture(Splatmap, UV.xy);
+    vec4 grass = texture(Grass, UV.xy * Grass_Scale);
+    vec4 blight = texture(Blight, UV.xy * Blight_Scale);
+	ALBEDO = mix(grass, blight, splat.r).xyz;
 }
 
 void light() {
@@ -44,16 +36,16 @@ void light() {
 
 }
 "
-graph_offset = Vector2( -425, 28 )
-nodes/fragment/3/node = SubResource( 1 )
-nodes/fragment/3/position = Vector2( 0, 180 )
-nodes/fragment/connections = PoolIntArray( 3, 0, 0, 0 )
 
 [sub_resource type="ImageTexture" id=5]
 
 [sub_resource type="ShaderMaterial" id=3]
-shader = SubResource( 2 )
+shader = SubResource( 6 )
+shader_param/Grass_Scale = 10.0
+shader_param/Blight_Scale = 10.0
 shader_param/Splatmap = SubResource( 5 )
+shader_param/Grass = ExtResource( 4 )
+shader_param/Blight = ExtResource( 5 )
 
 [node name="World" type="Spatial"]
 script = ExtResource( 1 )
@@ -70,4 +62,10 @@ skeleton = NodePath("../..")
 material/0 = SubResource( 3 )
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.662476, 0.749083, 0, -0.749083, 0.662476, -1.19209e-07, 2.02321, 2.31921 )
+transform = Transform( 1, 0, 0, 0, 0.662476, 0.749083, 0, -0.749083, 0.662476, 1.1921e-07, 1.39662, 1.54182 )
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource( 6 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.883668, -0.105621, -0.456044, 0.468115, 0.199383, 0.86088, 0, -0.974213, 0.225631, 0, 0, 0 )
