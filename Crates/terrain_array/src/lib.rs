@@ -13,8 +13,8 @@ pub enum Shape {
 }
 
 impl TerrainArray {
-    pub const WIDTH: usize = 256;
-    pub const HEIGHT: usize = 256;
+    pub const WIDTH: usize = 512;
+    pub const HEIGHT: usize = 512;
 
     pub fn new() -> Self {
         Self {
@@ -43,9 +43,34 @@ impl TerrainArray {
         }
     }
 
+    pub fn query_shape_avg(&mut self, shape: Shape) -> u8 {
+        match shape {
+            Shape::Circle { center, radius } => {
+                let mut sum: usize = 0;
+                let mut count: usize = 0;
+                let window_size = radius * 2 + 1;
+                let wi = center[0].saturating_sub(radius);
+                let wj = center[1].saturating_sub(radius);
+                self.data
+                    .slice_mut(s![wi..wi + window_size, wj..wj + window_size])
+                    .indexed_iter()
+                    .for_each(|((i, j), value)| {
+                        let di = radius as isize - i as isize;
+                        let dj = radius as isize - j as isize;
+                        let dist_sq = (di * di + dj * dj) as usize;
+                        if dist_sq <= radius * radius {
+                            sum += *value as usize;
+                            count += 1;
+                        }
+                    });
+                (sum / count) as u8
+            }
+        }
+    }
+
     pub fn dilate(&mut self) {
         let mut new_data = Array2::zeros(self.data.raw_dim());
-        ndarray::Zip::from(new_data.slice_mut(s![2..254, 2..254]))
+        ndarray::Zip::from(new_data.slice_mut(s![2..Self::WIDTH - 2, 2..Self::HEIGHT - 2]))
             .and(self.data.windows((5, 5)))
             .for_each(|v, window| {
                 let kernel = ndarray::array![
