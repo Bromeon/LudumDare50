@@ -15,6 +15,11 @@ noise = "0.7"
 rstar = "0.9.2"
 rand = "0.8.5"
 ndarray = "0.15"
+terrain_array = { path = "../Crates/terrain_array"}
+
+[profile.dev.package."*"]
+opt-level = 3
+
 
 [build-dependencies]
 heck = "0.4.0"

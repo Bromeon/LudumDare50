@@ -466,6 +466,7 @@ dependencies = [
  "noise",
  "rand 0.8.5",
  "rstar",
+ "terrain_array",
 ]
 
 [[package]]
@@ -949,6 +950,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
+]
+
+[[package]]
+name = "terrain_array"
+version = "0.1.0"
+dependencies = [
+ "ndarray",
 ]
 
 [[package]]
