@@ -3,7 +3,7 @@ extends Spatial
 
 const RAY_LENGTH = 1000.0
 
-const EFFECT_RADIUS = 7.0
+const EFFECT_RADIUS = 4.0
 
 
 var matDefault: SpatialMaterial

@@ -26,22 +26,27 @@ impl SpatialObjects {
 
 	#[export]
 	fn load(&mut self, base: &Spatial, scene: Ref<PackedScene>) {
-		for pos in random_positions(16) {
+		let mut structures = vec![];
+		for pos in random_positions(1000) {
 			let instanced = scene.instance(0).unwrap();
 			let instanced = instanced.cast::<Spatial>();
 			let id = instanced.get_instance_id();
 
 			instanced.set_translation(pos.to_3d());
+			instanced.set_scale(0.2 * Vector3::ONE);
 			base.add_child(instanced, false);
 
-			self.add_structure(id, pos);
+			structures.push(Structure::new(pos, id));
 		}
+
+		godot_print!("Bulk-add {} structures", structures.len());
+		self.rtree = RTree::bulk_load(structures);
 	}
 
 	#[export]
 	fn query_radius(&self, _base: &Spatial, position3d: Vector3, radius: f32) -> Vec<i64> {
 		//self.structures_by_id.keys().copied().collect()
-		let half_size = Vector2::ONE * 0.5 * radius;
+		let half_size = Vector2::ONE * radius;
 		let center = position3d.to_2d();
 		let p1 = (center - half_size).to_rstar();
 		let p2 = (center + half_size).to_rstar();
@@ -57,9 +62,8 @@ impl SpatialObjects {
 			.collect()
 	}
 
-	fn add_structure(&mut self, id: i64, pos: Vector2) {
-		let stc = Structure::new(pos, id);
-		godot_print!("Add structure {}: {:?}", id, stc);
+	fn add_structure(&mut self, stc: Structure) {
+		godot_print!("Add structure {:?}", stc);
 
 		//self.structures_by_id.insert(id, stc);
 		self.rtree.insert(stc);
