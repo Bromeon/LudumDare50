@@ -18,10 +18,16 @@ _global_script_classes=[ {
 "class": "LittleStruct",
 "language": "NativeScript",
 "path": "res://Native/LittleStruct.gdns"
+}, {
+"base": "",
+"class": "Terrain",
+"language": "NativeScript",
+"path": "res://Native/Terrain.gdns"
 } ]
 _global_script_class_icons={
 "GodotApi": "",
-"LittleStruct": ""
+"LittleStruct": "",
+"Terrain": ""
 }
 
 [application]

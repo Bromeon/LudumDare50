@@ -26,7 +26,11 @@ fn main() {
 		godot_gdns_dir: PathBuf::from("../Godot/Native"),
 		godot_gdnlib_res_path: PathBuf::from("res://Native/NativeLib.gdnlib"),
 		rust_class_dir: PathBuf::from("src/godot"),
-		classes: vec![class!(GodotApi: Node), class!(LittleStruct)],
+		classes: vec![
+			class!(GodotApi: Node),
+			class!(LittleStruct),
+			class!(Terrain : Node),
+		],
 	};
 
 	sync(cfg).expect("Sync configured correctly");
