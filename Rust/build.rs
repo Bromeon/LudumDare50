@@ -29,8 +29,8 @@ fn main() {
 		classes: vec![
 			class!(GodotApi: Node),
 			class!(LittleStruct),
-			class!(Terrain : Node),
-			class!(Spatials : Spatial)
+			class!(Terrain: Node),
+			class!(Spatials: Spatial),
 		],
 	};
 
