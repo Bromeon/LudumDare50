@@ -1,6 +1,6 @@
 use gdnative::prelude::*;
 
-use crate::VectorExt;
+use crate::Vector2Ext;
 use rstar::{RTreeObject, AABB};
 
 #[derive(Debug)]

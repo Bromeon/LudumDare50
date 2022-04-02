@@ -8,19 +8,22 @@ const EFFECT_RADIUS = 200.0
 
 var matDefault: SpatialMaterial
 var matHighlighted: SpatialMaterial
+var matAffected: SpatialMaterial
 
-var lastHighlightedObj: Spatial
+var lastHighlightedObj: Spatial = null
+var lastAffectedIds: Array = []
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var scene = preload("res://Scene/Objects/Structure.tscn")
-	$SpatialObjects.load(scene, EFFECT_RADIUS)
+	$SpatialObjects.load(scene)
 
 	matDefault = SpatialMaterial.new()
 	matHighlighted = SpatialMaterial.new()
 	matHighlighted.albedo_color = Color.crimson
-
+	matAffected = SpatialMaterial.new()
+	matAffected.albedo_color = Color.goldenrod
 
 func _process(_delta):
 	raycast()
@@ -44,13 +47,17 @@ func raycast():
 
 	var collider = result.get("collider")
 	if collider is StaticBody:
-		var parent: Spatial = collider.get_parent()
-		parent.applyMaterial(matHighlighted)
+		var hovered: Spatial = collider.get_parent()
+		hovered.applyMaterial(matHighlighted)
 
-		lastHighlightedObj = parent
+		lastHighlightedObj = hovered
+
+		var affected = $SpatialObjects.query_radius(hovered.global_transform.origin, EFFECT_RADIUS)
+		updateAffected(affected, hovered)
 
 	elif lastHighlightedObj != null:
 		lastHighlightedObj.applyMaterial(matDefault)
+		updateAffected([], null)
 
 
 # Mouse position projected onto XY plane (z=0)
@@ -69,3 +76,17 @@ func projectMousePos(localMousePos: Vector2) -> Vector3:
 
 	#print("Projected: ", projection)
 	return projection
+
+
+func updateAffected(affectedIds: Array, except):
+	for id in lastAffectedIds:
+		var node = instance_from_id(id)
+		if except == null || node != except:
+			node.applyMaterial(matDefault)
+
+	for id in affectedIds:
+		var node = instance_from_id(id)
+		if except == null || node != except:
+			node.applyMaterial(matAffected)
+
+	lastAffectedIds = affectedIds

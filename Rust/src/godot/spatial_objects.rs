@@ -3,12 +3,12 @@ use rand::Rng;
 use std::collections::HashMap;
 
 use crate::objects::Structure;
-use crate::VectorExt;
+use crate::VariantType::Int32Array;
+use crate::Vector2Ext;
 
 #[derive(NativeClass, Debug, Default)]
 #[inherit(Spatial)]
 pub struct SpatialObjects {
-	effect_radius: f32,
 	structures_by_id: HashMap<i64, Structure>,
 }
 
@@ -21,7 +21,7 @@ impl SpatialObjects {
 	}
 
 	#[export]
-	fn load(&mut self, base: &Spatial, scene: Ref<PackedScene>, effect_radius: f32) {
+	fn load(&mut self, base: &Spatial, scene: Ref<PackedScene>) {
 		for pos in random_positions(16) {
 			let instanced = scene.instance(0).unwrap();
 			let instanced = instanced.cast::<Spatial>();
@@ -35,8 +35,11 @@ impl SpatialObjects {
 			godot_print!("Created structure {}: {:?}", id, stc);
 			self.structures_by_id.insert(id, stc);
 		}
+	}
 
-		self.effect_radius = effect_radius;
+	#[export]
+	fn query_radius(&self, _base: &Spatial, position3d: Vector3, radius: f32) -> Vec<i64> {
+		self.structures_by_id.keys().copied().collect()
 	}
 }
 
