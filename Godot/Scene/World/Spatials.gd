@@ -3,7 +3,7 @@ extends Spatial
 
 const RAY_LENGTH = 1000.0
 
-const EFFECT_RADIUS = 200.0
+const EFFECT_RADIUS = 7.0
 
 
 var matDefault: SpatialMaterial
@@ -24,6 +24,9 @@ func _ready():
 	matHighlighted.albedo_color = Color.crimson
 	matAffected = SpatialMaterial.new()
 	matAffected.albedo_color = Color.goldenrod
+
+	$EffectRadius.scale = Vector3(EFFECT_RADIUS, 1, EFFECT_RADIUS)
+
 
 func _process(_delta):
 	raycast()
@@ -51,13 +54,17 @@ func raycast():
 		hovered.applyMaterial(matHighlighted)
 
 		lastHighlightedObj = hovered
+		$EffectRadius.translation = lastHighlightedObj.translation
+		$EffectRadius.visible = true
 
 		var affected = $SpatialObjects.query_radius(hovered.global_transform.origin, EFFECT_RADIUS)
-		updateAffected(affected, hovered)
+		updateAffected(hovered, affected)
 
 	elif lastHighlightedObj != null:
+		$EffectRadius.visible = false
 		lastHighlightedObj.applyMaterial(matDefault)
-		updateAffected([], null)
+		lastHighlightedObj = null
+		updateAffected(null, [])
 
 
 # Mouse position projected onto XY plane (z=0)
@@ -78,15 +85,15 @@ func projectMousePos(localMousePos: Vector2) -> Vector3:
 	return projection
 
 
-func updateAffected(affectedIds: Array, except):
+func updateAffected(affector, affectedIds: Array):
 	for id in lastAffectedIds:
 		var node = instance_from_id(id)
-		if except == null || node != except:
+		if affector == null || node != affector:
 			node.applyMaterial(matDefault)
 
 	for id in affectedIds:
 		var node = instance_from_id(id)
-		if except == null || node != except:
+		if affector == null || node != affector:
 			node.applyMaterial(matAffected)
 
 	lastAffectedIds = affectedIds
