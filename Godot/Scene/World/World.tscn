@@ -9,7 +9,7 @@
 [ext_resource path="res://Textures/Grass/Stylized_Grass_003_basecolor.jpg" type="Texture" id=7]
 
 [sub_resource type="PlaneMesh" id=4]
-size = Vector2( 5, 5 )
+size = Vector2( 25, 25 )
 subdivide_width = 10
 
 [sub_resource type="Shader" id=6]
