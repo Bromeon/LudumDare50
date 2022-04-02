@@ -43,7 +43,7 @@ impl TerrainArray {
         }
     }
 
-    pub fn query_shape_avg(&mut self, shape: Shape) -> u8 {
+    pub fn query_shape_avg(&self, shape: Shape) -> u8 {
         match shape {
             Shape::Circle { center, radius } => {
                 let mut sum: usize = 0;
@@ -52,7 +52,7 @@ impl TerrainArray {
                 let wi = center[0].saturating_sub(radius);
                 let wj = center[1].saturating_sub(radius);
                 self.data
-                    .slice_mut(s![wi..wi + window_size, wj..wj + window_size])
+                    .slice(s![wi..wi + window_size, wj..wj + window_size])
                     .indexed_iter()
                     .for_each(|((i, j), value)| {
                         let di = radius as isize - i as isize;
