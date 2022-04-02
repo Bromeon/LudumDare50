@@ -13,4 +13,6 @@ func _ready():
 
 
 func _process(_delta):
-    pass
+    # Escape
+	if Input.is_action_just_pressed("ui_cancel"):
+		get_tree().quit()
