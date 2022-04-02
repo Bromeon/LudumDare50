@@ -1,8 +1,9 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/GodotApi.gdns" type="Script" id=2]
 [ext_resource path="res://Native/Terrain.gdns" type="Script" id=3]
+[ext_resource path="res://Scene/World/Spatials.tscn" type="PackedScene" id=4]
 
 [sub_resource type="PlaneMesh" id=4]
 size = Vector2( 3.085, 2 )
@@ -71,3 +72,5 @@ material/0 = SubResource( 3 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.662476, 0.749083, 0, -0.749083, 0.662476, -1.19209e-07, 2.02321, 2.31921 )
+
+[node name="Spatials" parent="." instance=ExtResource( 4 )]

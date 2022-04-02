@@ -30,6 +30,7 @@ fn main() {
 			class!(GodotApi: Node),
 			class!(LittleStruct),
 			class!(Terrain : Node),
+			class!(Spatials : Spatial)
 		],
 	};
 
