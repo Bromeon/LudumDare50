@@ -1,0 +1,16 @@
+[general]
+
+singleton=false
+load_once=true
+symbol_prefix="godot_"
+reloadable=true
+
+[entry]
+
+Windows.64="res://../Rust/target/debug/ld50.dll"
+X11.64="res://../Rust/target/debug/libld50.so"
+
+[dependencies]
+
+Windows.64=[  ]
+X11.64=[  ]
