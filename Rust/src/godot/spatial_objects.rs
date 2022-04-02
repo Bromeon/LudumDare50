@@ -1,12 +1,15 @@
 use gdnative::prelude::*;
 use rand::Rng;
+use std::collections::HashMap;
+
+use crate::objects::Structure;
 use crate::VectorExt;
 
 #[derive(NativeClass, Debug, Default)]
 #[inherit(Spatial)]
 pub struct SpatialObjects {
-	#[property]
-	pub unimplemented: i32,
+	effect_radius: f32,
+	structures_by_id: HashMap<i64, Structure>,
 }
 
 #[methods]
@@ -18,16 +21,22 @@ impl SpatialObjects {
 	}
 
 	#[export]
-	fn load(&self, base: &Spatial, scene: Ref<PackedScene>) {
+	fn load(&mut self, base: &Spatial, scene: Ref<PackedScene>, effect_radius: f32) {
 		for pos in random_positions(16) {
 			let instanced = scene.instance(0).unwrap();
 			let instanced = instanced.cast::<Spatial>();
-			instanced.set_translation(pos.to_3d());
+			let id = instanced.get_instance_id();
 
+			instanced.set_translation(pos.to_3d());
 			base.add_child(instanced, false);
 
-			godot_print!("Created structure at {:?}", pos);
+			let stc = Structure::new(pos);
+
+			godot_print!("Created structure {}: {:?}", id, stc);
+			self.structures_by_id.insert(id, stc);
 		}
+
+		self.effect_radius = effect_radius;
 	}
 }
 

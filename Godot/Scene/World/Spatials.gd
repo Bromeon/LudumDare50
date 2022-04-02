@@ -3,6 +3,8 @@ extends Spatial
 
 const RAY_LENGTH = 1000.0
 
+const EFFECT_RADIUS = 200.0
+
 
 var matDefault: SpatialMaterial
 var matHighlighted: SpatialMaterial
@@ -13,7 +15,7 @@ var lastHighlightedObj: Spatial
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var scene = preload("res://Scene/Objects/Structure.tscn")
-	$SpatialObjects.load(scene)
+	$SpatialObjects.load(scene, EFFECT_RADIUS)
 
 	matDefault = SpatialMaterial.new()
 	matHighlighted = SpatialMaterial.new()
