@@ -43,7 +43,7 @@ func _ready():
 	$BuildRadius.scale = 2 * Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
 
 	ghost = $Ghosts/Pump
-	
+
 
 func _process(dt: float):
 	# Escape
@@ -62,6 +62,12 @@ func updateHovered() -> void:
 
 
 func raycast():
+	# Invalidate deleted
+	if lastHighlightedObj != null && !is_instance_valid(lastHighlightedObj):
+		lastHighlightedObj = null
+	if selectedObj != null && !is_instance_valid(selectedObj):
+		selectedObj = null
+
 	var localMousePos = get_viewport().get_mouse_position()
 
 	var spaceRid = get_world().space
