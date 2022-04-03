@@ -49,11 +49,8 @@ impl TerrainArray {
 
             outputs_sender.send(array.clone()).unwrap();
 
-            println!("Starting thread");
             while !shutdown_inner.load(Ordering::Relaxed) {
-                println!("Waiting for input");
                 if let Ok(input) = shapes_receiver.recv() {
-                    println!("Advance blight");
                     for (shape, fill) in input.into_iter() {
                         Self::do_fill_shape(&mut array, shape, fill);
                     }
@@ -63,7 +60,6 @@ impl TerrainArray {
                     std::thread::sleep(Duration::from_millis(500));
                 }
             }
-            println!("Shutting down thread");
         });
 
         Self {
@@ -77,11 +73,8 @@ impl TerrainArray {
     }
 
     pub fn shutdown(&mut self) {
-        println!("Shutdown from outside thread");
         self.shutdown.store(true, Ordering::Relaxed);
-        println!("After atomic op");
         self.thread.take().unwrap().join().unwrap();
-        println!("After join");
     }
 
     fn do_fill_shape(data_write: &mut Array2<u8>, shape: Shape, fill: u8) {

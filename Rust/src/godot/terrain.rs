@@ -156,6 +156,5 @@ impl Terrain {
 	#[export]
 	fn _exit_tree(&mut self, _base: &Node) {
 		self.array.shutdown();
-		std::process::exit(0);
 	}
 }
