@@ -31,6 +31,7 @@ fn main() {
 			class!(LittleStruct),
 			class!(Terrain: Node),
 			class!(SpatialObjects: Spatial),
+			class!(Zeppelin: Spatial),
 		],
 	};
 
