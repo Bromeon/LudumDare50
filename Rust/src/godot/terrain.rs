@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use gdnative::{
 	api::{ImageTexture, MeshInstance, PlaneMesh, ShaderMaterial},
 	prelude::*,
@@ -13,7 +11,6 @@ use terrain_array::*;
 pub struct Terrain {
 	pub mesh: Option<Ref<MeshInstance>>,
 	array: TerrainArray,
-	frame_count: usize,
 	measurements: PlaneMeasurements,
 }
 
@@ -38,7 +35,6 @@ impl Terrain {
 		Self {
 			mesh: None,
 			array: TerrainArray::default(),
-			frame_count: 0,
 			measurements: Default::default(), // Will initialize later
 		}
 	}

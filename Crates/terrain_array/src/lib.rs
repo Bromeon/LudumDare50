@@ -1,15 +1,11 @@
 use std::{
-    collections::{HashMap, HashSet},
-    rc::Rc,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        mpsc::{Receiver, Sender},
-        Mutex,
-    }, time::Duration,
+    collections::HashMap,
+    sync::mpsc::{Receiver, Sender},
+    time::Duration,
 };
 
 use ndarray::{s, Array2};
-use rand::Rng;
+use noise::{NoiseFn, Perlin};
 
 #[derive(Debug)]
 pub struct TerrainArray {
@@ -38,12 +34,15 @@ impl TerrainArray {
 
         std::thread::spawn(move || {
             let mut array = Array2::from_elem((Self::WIDTH, Self::HEIGHT), CLEAN);
+            let ijs =
+                Array2::from_shape_fn((Self::WIDTH, Self::HEIGHT), |(i, j)| (i as f64, j as f64));
+
             outputs_sender.send(array.clone()).unwrap();
             while let Ok(input) = shapes_receiver.recv() {
                 for (shape, fill) in input.into_iter() {
                     Self::do_fill_shape(&mut array, shape, fill);
                 }
-                Self::do_dilate(&mut array);
+                Self::do_dilate(&ijs, &mut array);
                 outputs_sender.send(array.clone()).unwrap();
 
                 std::thread::sleep(Duration::from_millis(500));
@@ -108,49 +107,58 @@ impl TerrainArray {
         }
     }
 
-    pub fn do_dilate(data_write: &mut Array2<u8>) {
+    pub fn do_dilate(ijs: &Array2<(f64, f64)>, data_write: &mut Array2<u8>) {
         let mut new_data = Array2::zeros(data_write.raw_dim());
-
-        let dist = rand::distributions::Uniform::<usize>::new(0, 4);
-        let mut rng = rand::thread_rng();
 
         let kernels = [
             ndarray::array![
                 [0, 0, 1, 0, 0],
                 [0, 0, 1, 0, 0],
-                [0, 0, 1, 0, 0],
+                [0, 1, 1, 1, 0],
                 [0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0],
             ],
             ndarray::array![
                 [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0],
                 [0, 0, 1, 1, 1],
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-            ],
-            ndarray::array![
-                [0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0],
-                [1, 1, 1, 0, 0],
-                [0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0],
                 [0, 0, 0, 0, 0],
             ],
             ndarray::array![
-                [0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0],
                 [0, 0, 1, 0, 0],
+                [1, 1, 1, 0, 0],
+                [0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0],
+            ],
+            ndarray::array![
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 1, 1, 1, 0],
                 [0, 0, 1, 0, 0],
                 [0, 0, 1, 0, 0],
             ],
         ];
 
+        let noise = Perlin::new();
+
         ndarray::Zip::from(new_data.slice_mut(s![2..Self::WIDTH - 2, 2..Self::HEIGHT - 2]))
+            .and(ijs.slice(s![2..Self::WIDTH - 2, 2..Self::HEIGHT - 2]))
             .and(data_write.windows((5, 5)))
-            .for_each(|v: &mut u8, window| {
+            .for_each(|v: &mut u8, (i, j), window| {
+                let noise = noise.get([
+                    i / Self::HEIGHT as f64 * 15.0,
+                    j / Self::WIDTH as f64 * 15.0,
+                ]);
+                let noise_norm = noise;
+                let kernel_idx = (noise_norm * kernels.len() as f64) as usize;
+
+                //let kernel_idx = rng.sample(dist);
+
                 if *v < BLIGHT {
                     *v = ndarray::Zip::from(window)
-                        .and(&kernels[rng.sample(dist)])
+                        .and(&kernels[kernel_idx.clamp(0, kernels.len() - 1)])
                         .fold(CLEAN, |acc, val, k| acc.max(*val * k));
                 }
             });

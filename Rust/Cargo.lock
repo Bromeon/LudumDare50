@@ -984,6 +984,7 @@ name = "terrain_array"
 version = "0.1.0"
 dependencies = [
  "ndarray",
+ "noise",
  "rand 0.8.5",
 ]
 

@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 ndarray = "0.15"
 rand = "0.8.5"
+noise = "0.7"
