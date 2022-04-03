@@ -95,8 +95,8 @@ void light() {
 shader = SubResource( 6 )
 shader_param/Grass_Scale = 5.0
 shader_param/Blight_Scale = 5.0
-shader_param/Blight_Tint = Color( 0.588235, 0.498039, 0.54902, 1 )
-shader_param/Grass_Tint = Color( 0.894118, 1, 0.701961, 1 )
+shader_param/Blight_Tint = Color( 0.392157, 0.392157, 0.392157, 1 )
+shader_param/Grass_Tint = Color( 0.313726, 0.552941, 0.294118, 1 )
 shader_param/Height_Blend_Factor = 0.325
 shader_param/Splatmap = SubResource( 12 )
 shader_param/Grass_A = ExtResource( 7 )
