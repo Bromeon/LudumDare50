@@ -7,8 +7,6 @@ use crate::godot::Terrain;
 use crate::objects::{Structure, StructureType};
 use crate::{Vector2Ext, Vector3Ext};
 
-const DAMAGE_RADIUS: f32 = 1.5;
-const CLEAN_RADIUS: f32 = 4.0;
 const DAMAGE_PER_SECOND: f32 = 80.0;
 const STRUCTURE_HEALTH: f32 = 100.0;
 
@@ -88,10 +86,10 @@ impl SpatialApi {
 			profiling::scope!("blight");
 
 			if stc.is_powered() {
-				terrain.clean_circle(stc.position().to_3d(), CLEAN_RADIUS);
+				terrain.clean_circle(stc.position().to_3d(), stc.clean_radius());
 			} else if stc.takes_damage() {
 				let blight =
-					terrain.get_average_blight_in_circle(stc.position().to_3d(), DAMAGE_RADIUS);
+					terrain.get_average_blight_in_circle(stc.position().to_3d(), stc.damage_radius());
 
 				let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
 				stc.deal_damage(damage);
