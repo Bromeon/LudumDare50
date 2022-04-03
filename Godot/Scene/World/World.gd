@@ -161,13 +161,13 @@ func alignPipe(pipe: Spatial, from: Vector3, to: Vector3) -> void:
 	var structureWidth = 0.2
 	var dist = from.distance_to(to) - structureWidth
 
-	ghostPipe.transform = Transform() \
+	pipe.transform = Transform() \
 		.translated(from) \
 		.scaled(Vector3(1, 1, 0.5 * dist)) \
 		.translated(-from)
 
-	ghostPipe.transform.origin = from
-	ghostPipe.look_at(to, Vector3.UP)
+	pipe.transform.origin = from
+	pipe.look_at(to, Vector3.UP)
 
 
 # Returns object hit by mouse, or null if on ground

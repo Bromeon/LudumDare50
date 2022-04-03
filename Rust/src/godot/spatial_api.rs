@@ -88,10 +88,11 @@ impl SpatialApi {
 	fn instance_pipe(&self, base: &Spatial, from: Vector3, to: Vector3) {
 		let (pipe, _id) = self.instance_scene("Pipe");
 
+		// Important: add to tree first!
+		base.get_node("Pipes").unwrap().add_child(pipe, false);
+
 		let world = base.get_parent().unwrap();
 		world.call("alignPipe", &v![pipe, from, to]);
-
-		base.get_node("Pipes").unwrap().add_child(pipe, false);
 	}
 
 	fn instance_scene(&self, scene_key: &str) -> (Ref<Spatial>, i64) {
