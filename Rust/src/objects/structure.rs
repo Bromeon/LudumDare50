@@ -29,31 +29,17 @@ impl Structure {
 			position,
 			id,
 			health,
-			powered: match ty {
-				StructureType::Water => true,
-				StructureType::Ore => false,
-				StructureType::Pump => false,
-				StructureType::Irrigation => false,
-			},
-		}
-	}
-
-	pub fn takes_damage(&self) -> bool {
-		match self.ty {
-			StructureType::Water => false,
-			StructureType::Ore => false,
-			StructureType::Pump => true,
-			StructureType::Irrigation => true,
+			powered: Self::can_be_powered(ty),
 		}
 	}
 
 	// The radius used when checking if this building is taking damage from blight
-	pub fn damage_radius(&self) -> f32 {
+	pub fn damage_radius(&self) -> Option<f32> {
 		match self.ty {
-			StructureType::Water => 0.0, // Doesn't take damage
-			StructureType::Ore => 0.0,   // Doesn't take damage
-			StructureType::Pump => 1.0,
-			StructureType::Irrigation => 1.5,
+			StructureType::Water => None, // Doesn't take damage
+			StructureType::Ore => None,   // Doesn't take damage
+			StructureType::Pump => Some(1.0),
+			StructureType::Irrigation => Some(1.5),
 		}
 	}
 
@@ -69,9 +55,12 @@ impl Structure {
 
 	// Setters
 	pub fn deal_damage(&mut self, damage: f32) {
+		assert!(self.damage_radius().is_some());
 		self.health -= damage;
 	}
+
 	pub fn set_powered(&mut self, powered: bool) {
+		assert!(Self::can_be_powered(self.ty));
 		self.powered = powered;
 	}
 
@@ -90,6 +79,15 @@ impl Structure {
 	}
 	pub fn is_powered(&self) -> bool {
 		self.powered
+	}
+
+	fn can_be_powered(ty: StructureType) -> bool {
+		match ty {
+			StructureType::Water => true,
+			StructureType::Ore => false,
+			StructureType::Pump => false,
+			StructureType::Irrigation => false,
+		}
 	}
 }
 

@@ -114,7 +114,6 @@ impl SpatialApi {
 		frame_count: usize,
 	) -> u32 {
 		let mut to_remove = vec![];
-
 		let mut ores = vec![];
 
 		for stc in rtree.iter_mut() {
@@ -122,9 +121,9 @@ impl SpatialApi {
 
 			if stc.is_powered() {
 				terrain.clean_circle(stc.position().to_3d(), stc.clean_radius());
-			} else if stc.takes_damage() {
-				let blight = terrain
-					.get_average_blight_in_circle(stc.position().to_3d(), stc.damage_radius());
+			} else if let Some(damage_radius) = stc.damage_radius() {
+				let blight =
+					terrain.get_average_blight_in_circle(stc.position().to_3d(), damage_radius);
 
 				let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
 				stc.deal_damage(damage);
