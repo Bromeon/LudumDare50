@@ -1,16 +1,22 @@
-[gd_scene load_steps=21 format=2]
+[gd_scene load_steps=27 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/SpatialApi.gdns" type="Script" id=2]
 [ext_resource path="res://Native/Terrain.gdns" type="Script" id=3]
 [ext_resource path="res://Scene/Objects/Zeppelin.tscn" type="PackedScene" id=4]
-[ext_resource path="res://Textures/Blight/Ground_Dirt_009_BaseColor.jpg" type="Texture" id=5]
+[ext_resource path="res://Textures/Blight2/Stylized_Dry_Mud_001_basecolor.jpg" type="Texture" id=5]
 [ext_resource path="res://Environment/Environment.tres" type="Environment" id=6]
-[ext_resource path="res://Textures/Grass/Stylized_Grass_003_basecolor.jpg" type="Texture" id=7]
+[ext_resource path="res://Textures/Grass2/Stylized_Grass_002_basecolor.jpg" type="Texture" id=7]
 [ext_resource path="res://Scene/Objects/Pump.tscn" type="PackedScene" id=8]
 [ext_resource path="res://Fonts/Coustard-Black.ttf" type="DynamicFontData" id=9]
 [ext_resource path="res://Scene/World/HUD.gd" type="Script" id=10]
-[ext_resource path="res://Scene/Objects/Pipe.tscn" type="PackedScene" id=11]
+[ext_resource path="res://Textures/Grass2/Stylized_Grass_002_roughness.jpg" type="Texture" id=11]
+[ext_resource path="res://Textures/Blight2/Stylized_Dry_Mud_001_roughness.jpg" type="Texture" id=12]
+[ext_resource path="res://Textures/Blight2/Stylized_Dry_Mud_001_normal.jpg" type="Texture" id=13]
+[ext_resource path="res://Textures/Grass2/Stylized_Grass_002_normal.jpg" type="Texture" id=14]
+[ext_resource path="res://Textures/Grass2/Stylized_Grass_002_height.png" type="Texture" id=15]
+[ext_resource path="res://Textures/Blight2/Stylized_Dry_Mud_001_height.png" type="Texture" id=16]
+[ext_resource path="res://Scene/Objects/Pipe.tscn" type="PackedScene" id=17]
 
 [sub_resource type="PlaneMesh" id=4]
 size = Vector2( 25, 25 )
@@ -21,19 +27,60 @@ code = "shader_type spatial;
 render_mode specular_schlick_ggx;
 
 uniform sampler2D Splatmap;
-uniform sampler2D Grass;
-uniform sampler2D Blight;
+uniform sampler2D Grass_A;
+uniform sampler2D Blight_A;
+
+uniform sampler2D Grass_N;
+uniform sampler2D Blight_N;
+
+uniform sampler2D Grass_R;
+uniform sampler2D Blight_R;
+
+uniform sampler2D Grass_H;
+uniform sampler2D Blight_H;
 
 uniform float Grass_Scale = 10.0;
 uniform float Blight_Scale = 10.0;
+
+uniform vec4 Blight_Tint : hint_color;
+uniform vec4 Grass_Tint : hint_color;
+
+uniform float Height_Blend_Factor = 1.0;
+
+// From the excellent tutorial: http://untitledgam.es/2017/01/height-blending-shader/
+vec3 heightblend(vec3 input1, float height1, vec3 input2, float height2) {
+    float height_start = max(height1, height2) - Height_Blend_Factor;
+    float level1 = max(height1 - height_start, 0);
+    float level2 = max(height2 - height_start, 0);
+    return ((input1 * level1) + (input2 * level2)) / (level1 + level2);
+}
+
+vec3 heightlerp(vec3 input1, float height1, vec3 input2, float height2, float t) {
+    t = clamp(t, 0, 1);
+    return heightblend(input1, height1 * (1.0 - t), input2, height2 * t);
+}
 
 void vertex() {}
 
 void fragment() {
     vec4 splat = texture(Splatmap, UV.xy);
-    vec4 grass = texture(Grass, UV.xy * Grass_Scale);
-    vec4 blight = texture(Blight, UV.xy * Blight_Scale);
-	ALBEDO = mix(grass, blight, splat.r).xyz;
+    
+    vec4 grass_a = texture(Grass_A, UV.xy * Grass_Scale) * Grass_Tint;
+    vec4 blight_a = texture(Blight_A, UV.xy * Blight_Scale) * Blight_Tint;
+    
+    vec4 grass_n = texture(Grass_N, UV.xy * Grass_Scale);
+    vec4 blight_n = texture(Blight_N, UV.xy * Blight_Scale);
+    
+    vec4 grass_r = texture(Grass_R, UV.xy * Grass_Scale);
+    vec4 blight_r = texture(Blight_R, UV.xy * Blight_Scale);
+    
+    vec4 grass_h = texture(Grass_H, UV.xy * Grass_Scale);
+    vec4 blight_h = texture(Blight_H, UV.xy * Blight_Scale);
+    
+	ALBEDO = heightlerp(grass_a.xyz, grass_h.r, blight_a.xyz, blight_h.r, splat.r);
+    NORMALMAP = heightlerp(grass_n.xyz, grass_h.r, blight_n.xyz, blight_h.r, splat.r);
+    NORMALMAP_DEPTH = 3.0;
+    ROUGHNESS = heightlerp(grass_r.xyz, grass_h.r, blight_r.xyz, blight_h.r, splat.r).r;
 }
 
 void light() {
@@ -42,15 +89,24 @@ void light() {
 }
 "
 
-[sub_resource type="ImageTexture" id=5]
+[sub_resource type="ImageTexture" id=12]
 
 [sub_resource type="ShaderMaterial" id=3]
 shader = SubResource( 6 )
-shader_param/Grass_Scale = 10.0
-shader_param/Blight_Scale = 10.0
-shader_param/Splatmap = SubResource( 5 )
-shader_param/Grass = ExtResource( 7 )
-shader_param/Blight = ExtResource( 5 )
+shader_param/Grass_Scale = 5.0
+shader_param/Blight_Scale = 5.0
+shader_param/Blight_Tint = Color( 0.588235, 0.498039, 0.54902, 1 )
+shader_param/Grass_Tint = Color( 0.894118, 1, 0.701961, 1 )
+shader_param/Height_Blend_Factor = 0.325
+shader_param/Splatmap = SubResource( 12 )
+shader_param/Grass_A = ExtResource( 7 )
+shader_param/Blight_A = ExtResource( 5 )
+shader_param/Grass_N = ExtResource( 14 )
+shader_param/Blight_N = ExtResource( 13 )
+shader_param/Grass_R = ExtResource( 11 )
+shader_param/Blight_R = ExtResource( 12 )
+shader_param/Grass_H = ExtResource( 15 )
+shader_param/Blight_H = ExtResource( 16 )
 
 [sub_resource type="SpatialMaterial" id=7]
 flags_transparent = true
@@ -90,7 +146,7 @@ transform = Transform( 1, 0, 0, 0, 0.355792, 0.934565, 0, -0.934565, 0.355792, 0
 environment = ExtResource( 6 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.0048345, 0.999988, 0, -0.999988, 0.0048345, -1.19209e-07, 6.25293, 2.31921 )
+transform = Transform( 1, 0, 0, 0, 0.0423464, 0.999103, 0, -0.999103, 0.0423464, -1.19209e-07, 0.13098, 2.31921 )
 shadow_enabled = true
 
 [node name="Terrain" type="Spatial" parent="."]
@@ -128,7 +184,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.97746, 0 )
 [node name="Pump" parent="Ghosts" instance=ExtResource( 8 )]
 ghost = true
 
-[node name="Pipe" parent="Ghosts" instance=ExtResource( 11 )]
+[node name="Pipe" parent="Ghosts" instance=ExtResource( 17 )]
 ghost = true
 
 [node name="HUD" type="Control" parent="."]

@@ -31,8 +31,8 @@ pub enum Shape {
 }
 
 impl TerrainArray {
-    pub const WIDTH: usize = 256;
-    pub const HEIGHT: usize = 256;
+    pub const WIDTH: usize = 512;
+    pub const HEIGHT: usize = 512;
 
     pub fn new() -> Self {
         let (shapes_sender, shapes_receiver): (_, Receiver<HashMap<Shape, u8>>) =
@@ -171,8 +171,8 @@ impl TerrainArray {
             .and(data_write.windows((5, 5)))
             .for_each(|v: &mut u8, (i, j), window| {
                 let noise = noise.get([
-                    i / Self::HEIGHT as f64 * 25.0,
-                    j / Self::WIDTH as f64 * 25.0,
+                    i / Self::HEIGHT as f64 * 50.0,
+                    j / Self::WIDTH as f64 * 50.0,
                 ]);
                 let noise_norm = noise;
                 let kernel_idx = (noise_norm * kernels.len() as f64) as usize;
