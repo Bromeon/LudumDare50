@@ -30,7 +30,6 @@ void fragment() {
     vec4 grass = texture(Grass, UV.xy * Grass_Scale);
     vec4 blight = texture(Blight, UV.xy * Blight_Scale);
 	ALBEDO = mix(grass, blight, splat.r).xyz;
-    ALBEDO = grass.rgb;
 }
 
 void light() {

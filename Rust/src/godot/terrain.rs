@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use gdnative::{
 	api::{ImageTexture, MeshInstance, PlaneMesh, ShaderMaterial},
 	prelude::*,
@@ -41,6 +43,7 @@ impl Terrain {
 		}
 	}
 
+	#[profiling::function]
 	fn reload_image(&mut self) {
 		let image = Image::new().into_shared();
 		let bytes = ByteArray::from_slice(self.array.data().slice(s![.., ..]).as_slice().unwrap());
@@ -96,11 +99,10 @@ impl Terrain {
 	}
 
 	#[export]
+	#[profiling::function]
 	fn _physics_process(&mut self, _base: &Node, _dt: f32) {
-		self.frame_count += 1;
-		if self.frame_count % 7 == 0 {
-			self.array.dilate();
-		}
+		profiling::finish_frame!();
+		self.array.swap_if_ready();
 		self.reload_image();
 	}
 
@@ -111,14 +113,14 @@ impl Terrain {
 			(world_pos.xz() - self.measurements.top_left) / self.measurements.plane_size;
 		let grid =
 			normalized * Vector2::new(TerrainArray::WIDTH as f32, TerrainArray::HEIGHT as f32);
-		[grid.x as usize, grid.y as usize]
+		[grid.y as usize, grid.x as usize]
 	}
 
 	/// Given a position in using the inner array's coordinates, returns the
 	/// world position of that point.
 	#[allow(dead_code)]
 	fn grid2world(&self, pos: [usize; 2]) -> Vector2 {
-		let posv2 = Vector2::new(pos[0] as f32, pos[1] as f32);
+		let posv2 = Vector2::new(pos[1] as f32, pos[0] as f32);
 		let normalized = posv2
 			* Vector2::new(
 				1.0 / TerrainArray::WIDTH as f32,
@@ -129,6 +131,7 @@ impl Terrain {
 
 	/// Returns the average blight value (between 0 and 255) of the circle with
 	/// given `center` and `radius` values.
+	#[profiling::function]
 	pub fn get_average_blight_in_circle(&self, center: Vector3, radius: f32) -> u8 {
 		let center_grid = self.world2grid(center);
 		let half_size = TerrainArray::WIDTH as f32 / 2.0;
@@ -142,6 +145,7 @@ impl Terrain {
 
 	/// Cleans a circle from blight
 	#[export]
+	#[profiling::function]
 	pub fn clean_circle(&mut self, _base: &Node, center: Vector3, radius: f32) {
 		let center_grid = self.world2grid(center);
 		let half_size = TerrainArray::WIDTH as f32 / 2.0;

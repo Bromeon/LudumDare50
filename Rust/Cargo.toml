@@ -16,6 +16,7 @@ rstar = "0.9.2"
 rand = "0.8.5"
 ndarray = "0.15"
 terrain_array = { path = "../Crates/terrain_array"}
+profiling = { version = "1.0", features = ["profile-with-tracy"] }
 
 [profile.dev.package."*"]
 opt-level = 3

@@ -61,10 +61,12 @@ impl SpatialApi {
 		});
 	}
 
+	#[profiling::function]
 	fn update_blight_impl(rtree: &mut RTree<Structure>, dt: f32, terrain: &Terrain) {
 		let mut to_remove = vec![];
 
 		for stc in rtree.iter_mut() {
+			profiling::scope!("blight");
 			let blight =
 				terrain.get_average_blight_in_circle(stc.position().to_3d(), STRUCTURE_RADIUS);
 
@@ -80,7 +82,7 @@ impl SpatialApi {
 
 		// RTree API only allows removal one at a time
 		if !to_remove.is_empty() {
-			println!("Remove {} structures", to_remove.len());
+			//println!("Remove {} structures", to_remove.len());
 		}
 
 		for elem in to_remove.iter() {
