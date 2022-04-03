@@ -43,7 +43,7 @@ impl TerrainArray {
                     Self::do_fill_shape(&mut array, shape, fill);
                 }
                 Self::do_dilate(&ijs, &mut array);
-                let _ = outputs_sender.send(array.clone());
+                outputs_sender.send(array.clone()).unwrap();
 
                 std::thread::sleep(Duration::from_millis(500));
             }
