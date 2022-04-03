@@ -28,6 +28,7 @@ func _ready():
 		Ore = preload("res://Scene/Objects/Ore.tscn"),
 		Pump = preload("res://Scene/Objects/Pump.tscn"),
 		Irrigation = preload("res://Scene/Objects/Irrigation.tscn"),
+		Pipe = preload("res://Scene/Objects/Pipe.tscn"),
 	}
 
 	$SpatialApi.load(scenes)
@@ -104,7 +105,7 @@ func handleMouseInteraction():
 		# Place building
 		if Input.is_action_just_pressed("right_click"):
 			if groundPosInRange != null:
-				var id = $SpatialApi.add_structure(groundPosInRange, "Pump")
+				var id = $SpatialApi.add_structure(groundPosInRange, "Pump", selectedObj)
 				updateSelected(instance_from_id(id))
 			return
 
@@ -152,7 +153,11 @@ func showGhosts(from: Vector3, to: Vector3) -> void:
 	ghostStc.translation = to
 
 	ghostPipe.visible = true
+	alignPipe(ghostPipe, from, to)
 
+
+# Called from Rust
+func alignPipe(pipe: Spatial, from: Vector3, to: Vector3) -> void:
 	var structureWidth = 0.2
 	var dist = from.distance_to(to) - structureWidth
 

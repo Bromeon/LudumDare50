@@ -1,5 +1,3 @@
-use gdnative::prelude::*;
-
 pub struct Pipe {
 	start_id: i64,
 	end_id: i64,

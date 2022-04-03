@@ -4,7 +4,7 @@ use rstar::{RTree, AABB};
 //use std::collections::HashMap;
 
 use crate::godot::Terrain;
-use crate::objects::{Structure, StructureType, IRRIGATION_CLEAN_RADIUS, Pipe};
+use crate::objects::{Pipe, Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
 use crate::{Vector2Ext, Vector3Ext};
 
 const DAMAGE_PER_SECOND: f32 = 80.0;
@@ -25,7 +25,7 @@ pub struct SpatialApi {
 
 	terrain: Option<Instance<Terrain>>,
 
-	stc_scenes: Dictionary,
+	scenes: Dictionary,
 	ore_amount: u32,
 	frame_count: usize,
 }
@@ -40,7 +40,7 @@ impl SpatialApi {
 			rtree: RTree::new(),
 			pipes: Vec::new(),
 			terrain: None,
-			stc_scenes: Dictionary::new_shared(),
+			scenes: Dictionary::new_shared(),
 			ore_amount: 0,
 			frame_count: 0,
 		}
@@ -48,7 +48,7 @@ impl SpatialApi {
 
 	#[export]
 	fn load(&mut self, base: &Spatial, scenes: Dictionary) {
-		self.stc_scenes = scenes;
+		self.scenes = scenes;
 
 		let mut structures = vec![];
 
@@ -66,15 +66,7 @@ impl SpatialApi {
 	}
 
 	fn instance_structure(&self, base: &Spatial, pos: Vector2, ty_name: &str) -> Structure {
-		let scene = self
-			.stc_scenes
-			.get(ty_name)
-			.unwrap()
-			.to_object::<PackedScene>()
-			.unwrap();
-		let instanced = scene.instance(0).unwrap();
-		let instanced = instanced.cast::<Spatial>();
-		let id = instanced.get_instance_id();
+		let (instanced, id) = self.instance_scene(ty_name);
 
 		instanced.set_translation(pos.to_3d());
 		instanced.set_scale(0.2 * Vector3::ONE);
@@ -91,6 +83,25 @@ impl SpatialApi {
 		};
 
 		Structure::new(ty, pos, id, STRUCTURE_HEALTH)
+	}
+
+	fn instance_pipe(&self, base: &Spatial, from: Vector3, to: Vector3) {
+		let (pipe, _id) = self.instance_scene("Pipe");
+
+		let world = base.get_parent().unwrap();
+		world.call("alignPipe", &v![pipe, from, to]);
+
+		base.get_node("Pipes").unwrap().add_child(pipe, false);
+	}
+
+	fn instance_scene(&self, scene_key: &str) -> (Ref<Spatial>, i64) {
+		let scene = self.scenes.get(scene_key).unwrap();
+		let scene = scene.to_object::<PackedScene>().unwrap();
+		let instanced = scene.instance(0).unwrap();
+		let instanced = instanced.cast::<Spatial>();
+		let id = instanced.get_instance_id();
+
+		(instanced, id)
 	}
 
 	#[export]
@@ -209,15 +220,22 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn add_structure(&mut self, base: &Spatial, pos: Vector3, ty_name: String, pipe_from: Option<Ref<Spatial>>) -> i64 {
+	fn add_structure(
+		&mut self,
+		base: &Spatial,
+		pos: Vector3,
+		ty_name: String,
+		pipe_from_obj: Option<Ref<Spatial>>,
+	) -> i64 {
 		let stc = self.instance_structure(base, pos.to_2d(), &ty_name);
 		godot_print!("Add structure {:?}", stc);
 
-		if let Some(node) = pipe_from {
-			let from_id = node.get_instance_id();
+		if let Some(from) = pipe_from_obj {
+			let from_id = from.get_instance_id();
 			let to_id = stc.instance_id();
 
 			self.pipes.push(Pipe::new(from_id, to_id));
+			self.instance_pipe(base, from.translation(), pos);
 		}
 
 		//self.structures_by_id.insert(id, stc);

@@ -14,6 +14,15 @@ macro_rules! get_node {
 	};
 }
 
+#[macro_export]
+macro_rules! v {
+	[$($expr:expr),*] => {
+		[$(
+			gdnative::prelude::Variant::new($expr)
+		),*]
+	};
+}
+
 //#[path="godot/structs/mod.rs"]
 pub mod godot;
 pub mod objects;
