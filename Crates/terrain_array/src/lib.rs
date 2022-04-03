@@ -171,8 +171,8 @@ impl TerrainArray {
             .and(data_write.windows((5, 5)))
             .for_each(|v: &mut u8, (i, j), window| {
                 let noise = noise.get([
-                    i / Self::HEIGHT as f64 * 15.0,
-                    j / Self::WIDTH as f64 * 15.0,
+                    i / Self::HEIGHT as f64 * 25.0,
+                    j / Self::WIDTH as f64 * 25.0,
                 ]);
                 let noise_norm = noise;
                 let kernel_idx = (noise_norm * kernels.len() as f64) as usize;

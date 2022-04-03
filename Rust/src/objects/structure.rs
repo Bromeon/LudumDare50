@@ -45,6 +45,26 @@ impl Structure {
 		}
 	}
 
+	// The radius used when checking if this building is taking damage from blight
+	pub fn damage_radius(&self) -> f32 {
+		match self.ty {
+			StructureType::Water => 0.0, // Doesn't take damage
+			StructureType::Ore => 0.0, // Doesn't take damage
+			StructureType::Pump => 1.0,
+			StructureType::Irrigation => 1.5,
+		}
+	}
+
+	// When this building is powered, the 
+	pub fn clean_radius(&self) -> f32 {
+		match self.ty {
+			StructureType::Water => 5.0,
+			StructureType::Ore => 0.0, // Doesn't clean
+			StructureType::Pump => 2.0,
+			StructureType::Irrigation => 8.0,
+		}
+	}
+
 	// Setters
 	pub fn deal_damage(&mut self, damage: f32) {
 		self.health -= damage;
