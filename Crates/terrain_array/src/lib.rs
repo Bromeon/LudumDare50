@@ -6,7 +6,7 @@ use std::{
         Arc,
     },
     thread::JoinHandle,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use ndarray::{s, Array2};
@@ -51,13 +51,16 @@ impl TerrainArray {
 
             while !shutdown_inner.load(Ordering::Relaxed) {
                 if let Ok(input) = shapes_receiver.recv() {
+                    let start_time = Instant::now();
                     for (shape, fill) in input.into_iter() {
                         Self::do_fill_shape(&mut array, shape, fill);
                     }
                     Self::do_dilate(&ijs, &mut array);
                     outputs_sender.send(array.clone()).unwrap();
 
-                    std::thread::sleep(Duration::from_millis(500));
+                    let elapsed = Instant::now().duration_since(start_time);
+                    let sleep = Duration::from_millis(500).saturating_sub(elapsed);
+                    std::thread::sleep(sleep);
                 }
             }
         });
