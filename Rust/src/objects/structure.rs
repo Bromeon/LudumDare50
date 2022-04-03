@@ -3,24 +3,25 @@ use gdnative::prelude::*;
 use crate::Vector2Ext;
 use rstar::{RTreeObject, AABB};
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum StructureType {
+	Water,
+	Ore,
+	Pump,
+	Irrigation,
+}
+
 #[derive(Debug, Copy, Clone)]
-pub struct Structure {
+pub struct Structure {ty:StructureType,
 	position: Vector2,
 	id: i64,
 	health: f32,
 }
 
-impl PartialEq for Structure {
-	fn eq(&self, other: &Self) -> bool {
-		self.position == other.position
-	}
-}
-
-impl Eq for Structure {}
-
 impl Structure {
-	pub fn new(position: Vector2, id: i64, health: f32) -> Structure {
+	pub fn new(ty: StructureType, position: Vector2, id: i64, health: f32) -> Structure {
 		Self {
+			ty,
 			position,
 			id,
 			health,
@@ -51,3 +52,12 @@ impl RTreeObject for Structure {
 		aabb
 	}
 }
+
+// for RTRee
+impl PartialEq for Structure {
+	fn eq(&self, other: &Self) -> bool {
+		self.position == other.position
+	}
+}
+
+impl Eq for Structure {}

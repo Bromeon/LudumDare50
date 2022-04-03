@@ -17,8 +17,14 @@ var lastHighlightedObj: Spatial = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var scene = preload("res://Scene/Objects/Structure.tscn")
-	$SpatialApi.load(scene)
+	var scenes = {
+		Water = preload("res://Scene/Objects/Water.tscn"),
+		Ore = preload("res://Scene/Objects/Ore.tscn"),
+		Pump = preload("res://Scene/Objects/Pump.tscn"),
+		Irrigation = preload("res://Scene/Objects/Irrigation.tscn"),
+	}
+
+	$SpatialApi.load(scenes)
 
 	matDefault = SpatialMaterial.new()
 	matHighlighted = SpatialMaterial.new()
@@ -30,14 +36,14 @@ func _ready():
 
 
 func _process(dt: float):
-    # Escape
-    if Input.is_action_just_pressed("ui_cancel"):
-        get_tree().quit()
-        return
+	# Escape
+	if Input.is_action_just_pressed("ui_cancel"):
+		get_tree().quit()
+		return
 
-    $SpatialApi.update_blight_impact(dt)
+	$SpatialApi.update_blight_impact(dt)
 
-    raycast()
+	raycast()
 
 
 func updateHovered() -> void:

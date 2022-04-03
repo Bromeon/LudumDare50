@@ -1,10 +1,10 @@
 use gdnative::prelude::*;
-use rand::Rng;
+use rand::prelude::*;
 use rstar::{RTree, AABB};
 //use std::collections::HashMap;
 
 use crate::godot::Terrain;
-use crate::objects::Structure;
+use crate::objects::{Structure, StructureType};
 use crate::{Vector2Ext, Vector3Ext};
 
 const STRUCTURE_RADIUS: f32 = 5.0;
@@ -33,9 +33,13 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn load(&mut self, base: &Spatial, scene: Ref<PackedScene>) {
+	fn load(&mut self, base: &Spatial, scenes: Dictionary) {
 		let mut structures = vec![];
-		for pos in random_positions(1000) {
+
+		let variants = ["Water", "Ore", "Pump", "Irrigation"];
+		for pos in random_positions(20) {
+			let v = variants.iter().choose(&mut thread_rng()).unwrap();
+			let scene = scenes.get(v).unwrap().to_object::<PackedScene>().unwrap();
 			let instanced = scene.instance(0).unwrap();
 			let instanced = instanced.cast::<Spatial>();
 			let id = instanced.get_instance_id();
@@ -44,7 +48,7 @@ impl SpatialApi {
 			instanced.set_scale(0.2 * Vector3::ONE);
 			base.get_node("Structures").unwrap().add_child(instanced, false);
 
-			structures.push(Structure::new(pos, id, STRUCTURE_HEALTH));
+			structures.push(Structure::new(StructureType::Irrigation, pos, id, STRUCTURE_HEALTH));
 		}
 
 		godot_print!("Bulk-add {} structures", structures.len());
