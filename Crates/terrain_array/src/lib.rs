@@ -77,8 +77,11 @@ impl TerrainArray {
     }
 
     pub fn shutdown(&mut self) {
+        println!("Shutdown from outside thread");
         self.shutdown.store(true, Ordering::Relaxed);
+        println!("After atomic op");
         self.thread.take().unwrap().join().unwrap();
+        println!("After join");
     }
 
     fn do_fill_shape(data_write: &mut Array2<u8>, shape: Shape, fill: u8) {
