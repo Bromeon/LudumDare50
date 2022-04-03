@@ -42,8 +42,9 @@ func raycast():
 	var spaceRid = get_world().space
 	var spaceState = PhysicsServer.space_get_direct_state(spaceRid)
 
-	var origin = $Camera.project_ray_origin(localMousePos)
-	var normal = $Camera.project_ray_normal(localMousePos)
+	var camera: Camera = get_node("/root/World/Camera")
+	var origin = camera.project_ray_origin(localMousePos)
+	var normal = camera.project_ray_normal(localMousePos)
 
 	var result = spaceState.intersect_ray(origin, origin + normal * RAY_LENGTH)
 	#print(result)
