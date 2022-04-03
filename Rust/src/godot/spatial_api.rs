@@ -6,15 +6,15 @@ use rstar::{RTree, AABB};
 use crate::objects::Structure;
 use crate::{Vector2Ext, Vector3Ext};
 
-#[derive(NativeClass, Debug)]
+#[derive(NativeClass)]
 #[inherit(Spatial)]
-pub struct SpatialObjects {
+pub struct SpatialApi {
 	//structures_by_id: HashMap<i64, Structure>,
 	rtree: RTree<Structure>,
 }
 
 #[methods]
-impl SpatialObjects {
+impl SpatialApi {
 	fn new(_base: &Spatial) -> Self {
 		godot_print!("Spatials is instantiated.");
 
@@ -52,7 +52,7 @@ impl SpatialObjects {
 		let p2 = (center + half_size).to_rstar();
 
 		let aabb = AABB::from_corners(p1, p2);
-		println!("Query {:?}", aabb);
+		//println!("Query {:?}", aabb);
 
 		let radius_sq = radius * radius;
 		self.rtree

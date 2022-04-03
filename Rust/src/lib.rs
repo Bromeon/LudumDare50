@@ -17,7 +17,6 @@ macro_rules! get_node {
 //#[path="godot/structs/mod.rs"]
 pub mod godot;
 pub mod objects;
-pub mod world;
 
 use godot::register_classes;
 
@@ -63,9 +62,4 @@ impl Vector3Ext for Vector3 {
 	fn to_2d(self) -> Vector2 {
 		Vector2::new(self.x, self.z)
 	}
-}
-
-#[allow(dead_code)]
-fn compile_test() {
-	let _ = godot::LittleStruct { unimplemented: 77 };
 }
