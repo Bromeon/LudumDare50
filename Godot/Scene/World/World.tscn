@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/SpatialApi.gdns" type="Script" id=2]
@@ -10,6 +10,7 @@
 [ext_resource path="res://Scene/Objects/Pump.tscn" type="PackedScene" id=8]
 [ext_resource path="res://Fonts/Coustard-Black.ttf" type="DynamicFontData" id=9]
 [ext_resource path="res://Scene/World/HUD.gd" type="Script" id=10]
+[ext_resource path="res://Scene/Objects/Pipe.tscn" type="PackedScene" id=11]
 
 [sub_resource type="PlaneMesh" id=4]
 size = Vector2( 25, 25 )
@@ -125,6 +126,9 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.97746, 0 )
 [node name="Ghosts" type="Spatial" parent="."]
 
 [node name="Pump" parent="Ghosts" instance=ExtResource( 8 )]
+ghost = true
+
+[node name="Pipe" parent="Ghosts" instance=ExtResource( 11 )]
 ghost = true
 
 [node name="HUD" type="Control" parent="."]

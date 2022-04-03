@@ -91,7 +91,7 @@ func handleMouseInteraction():
 		$EffectRadius.visible = false
 
 		var groundPosInRange = null
-		if selectedObj:
+		if selectedObj != null:
 			var groundPos = raycastMouseGround(localMousePos)
 			if groundPos.distance_squared_to(selectedObj.translation) < BUILD_RADIUS * BUILD_RADIUS:
 				groundPosInRange = groundPos
@@ -100,19 +100,24 @@ func handleMouseInteraction():
 		if Input.is_action_just_pressed("left_click"):
 			$BuildRadius.visible = false
 			selectedObj = null
+			return
 
 		# Place building
-		elif Input.is_action_just_pressed("right_click"):
+		if Input.is_action_just_pressed("right_click"):
 			if groundPosInRange != null:
 				var id = $SpatialApi.add_structure(groundPosInRange, "Pump")
 				updateSelected(instance_from_id(id))
+			return
 
 		# Drag ghost
 		if groundPosInRange != null:
 			ghost.visible = true
 			ghost.translation = groundPosInRange
+			updatePipe(selectedObj.translation, groundPosInRange)
+
 		else:
 			ghost.visible = false
+			updatePipe(null, null)
 
 
 func updateSelected(obj) -> void:
@@ -137,6 +142,27 @@ func updateHovered(obj) -> void:
 		var node = instance_from_id(id)
 		if node != obj && node != selectedObj:
 			node.applyMaterial(matAffected)
+
+
+func updatePipe(from, to) -> void:
+	var pipe = $Ghosts/Pipe
+	if from == null:
+		pipe.visible = false
+		return
+
+	pipe.visible = true
+
+	var structureWidth = 0.2
+	var dist = from.distance_to(to) - structureWidth
+
+	#pipe.transform = Transform().translated(-from).scaled(Vector3(1, 1, dist)).translated(from)
+	pipe.transform = Transform() \
+		.translated(from) \
+		.scaled(Vector3(1, 1, 0.5 * dist)) \
+		.translated(-from)
+
+	pipe.transform.origin = from
+	pipe.look_at(to, Vector3.UP)
 
 
 # Returns object hit by mouse, or null if on ground

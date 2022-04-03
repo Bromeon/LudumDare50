@@ -9,10 +9,11 @@ func _ready():
 	if ghost:
 		applyMaterial(ghostMaterial)
 
-		# Remove colliders
+		# Remove collision shapes
 		for node in get_children():
-			var collision = node.get_node("CollisionShape")
-			collision.queue_free()
+			var collision = node.get_node_or_null("CollisionShape")
+			if collision:
+				collision.queue_free()
 
 
 func applyMaterial(mat: SpatialMaterial) -> void:
