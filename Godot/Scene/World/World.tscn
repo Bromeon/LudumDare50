@@ -29,6 +29,7 @@ void fragment() {
     vec4 grass = texture(Grass, UV.xy * Grass_Scale);
     vec4 blight = texture(Blight, UV.xy * Blight_Scale);
 	ALBEDO = mix(grass, blight, splat.r).xyz;
+    ALBEDO = grass.rgb;
 }
 
 void light() {
@@ -69,7 +70,8 @@ transform = Transform( 1, 0, 0, 0, 0.355792, 0.934565, 0, -0.934565, 0.355792, 0
 environment = ExtResource( 6 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.662476, 0.749083, 0, -0.749083, 0.662476, -1.19209e-07, 2.02321, 2.31921 )
+transform = Transform( 1, 0, 0, 0, 0.0048345, 0.999988, 0, -0.999988, 0.0048345, -1.19209e-07, 6.25293, 2.31921 )
+shadow_enabled = true
 
 [node name="Terrain" type="Spatial" parent="."]
 script = ExtResource( 3 )
