@@ -3,14 +3,21 @@ use rand::Rng;
 use rstar::{RTree, AABB};
 //use std::collections::HashMap;
 
+use crate::godot::Terrain;
 use crate::objects::Structure;
 use crate::{Vector2Ext, Vector3Ext};
+
+const STRUCTURE_RADIUS: f32 = 5.0;
+const DAMAGE_PER_SECOND: f32 = 10.0;
+const STRUCTURE_HEALTH: f32 = 100.0;
 
 #[derive(NativeClass)]
 #[inherit(Spatial)]
 pub struct SpatialApi {
 	//structures_by_id: HashMap<i64, Structure>,
 	rtree: RTree<Structure>,
+
+	terrain: Option<Instance<Terrain>>,
 }
 
 #[methods]
@@ -21,6 +28,7 @@ impl SpatialApi {
 		Self {
 			//structures_by_id: HashMap::new(),
 			rtree: RTree::new(),
+			terrain: None,
 		}
 	}
 
@@ -36,11 +44,52 @@ impl SpatialApi {
 			instanced.set_scale(0.2 * Vector3::ONE);
 			base.add_child(instanced, false);
 
-			structures.push(Structure::new(pos, id));
+			structures.push(Structure::new(pos, id, STRUCTURE_HEALTH));
 		}
 
 		godot_print!("Bulk-add {} structures", structures.len());
 		self.rtree = RTree::bulk_load(structures);
+
+		self.terrain = Some(base.get_node_as_instance::<Terrain>("../Terrain").claim());
+	}
+
+	#[export]
+	fn update_blight_impact(&mut self, _base: &Spatial, dt: f32) {
+
+		self
+			.terrain
+			.as_ref()
+			.map(|i| {
+				i.map(|t, _| Self::update_blight_impl(&mut self.rtree, dt, t))
+					.unwrap();
+			});
+
+
+	}
+
+	fn update_blight_impl(rtree: &mut RTree<Structure>, dt: f32, terrain: &Terrain) {
+		let mut to_remove = vec![];
+
+		for stc in rtree.iter_mut() {
+			let blight =
+				terrain.get_average_blight_in_circle(stc.position().to_3d(), STRUCTURE_RADIUS);
+
+			let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
+			stc.deal_damage(damage);
+
+			if !stc.is_alive() {
+				to_remove.push(stc.clone());
+			}
+		}
+
+		// RTree API only allows removal one at a time
+		for elem in to_remove {
+			rtree.remove(&elem);
+		}
+
+		/*self.rtree.remove_with_selection_function(|stc:&Structure| {
+			!stc.is_alive()
+		});*/
 	}
 
 	#[export]

@@ -3,19 +3,27 @@ use gdnative::prelude::*;
 use crate::Vector2Ext;
 use rstar::{RTreeObject, AABB};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Structure {
 	position: Vector2,
 	id: i64,
 	health: f32,
 }
 
+impl PartialEq for Structure {
+	fn eq(&self, other: &Self) -> bool {
+		self.position == other.position
+	}
+}
+
+impl Eq for Structure{}
+
 impl Structure {
-	pub fn new(position: Vector2, id: i64) -> Structure {
+	pub fn new(position: Vector2, id: i64, health:f32) -> Structure {
 		Self {
 			position,
 			id,
-			health: 100.0,
+			health,
 		}
 	}
 

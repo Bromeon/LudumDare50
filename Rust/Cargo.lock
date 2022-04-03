@@ -200,7 +200,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 [[package]]
 name = "gdnative"
 version = "0.10.0"
-source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#caaa411ac444e7bf2bcd103fa065293e60563aef"
+source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#fea42517fb215751ba73af3c4fce53131d3ade41"
 dependencies = [
  "gdnative-bindings",
  "gdnative-core",
@@ -210,7 +210,7 @@ dependencies = [
 [[package]]
 name = "gdnative-bindings"
 version = "0.10.0"
-source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#caaa411ac444e7bf2bcd103fa065293e60563aef"
+source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#fea42517fb215751ba73af3c4fce53131d3ade41"
 dependencies = [
  "bitflags",
  "gdnative-core",
@@ -222,7 +222,7 @@ dependencies = [
 [[package]]
 name = "gdnative-core"
 version = "0.10.0"
-source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#caaa411ac444e7bf2bcd103fa065293e60563aef"
+source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#fea42517fb215751ba73af3c4fce53131d3ade41"
 dependencies = [
  "ahash",
  "approx",
@@ -240,7 +240,7 @@ dependencies = [
 [[package]]
 name = "gdnative-derive"
 version = "0.10.0"
-source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#caaa411ac444e7bf2bcd103fa065293e60563aef"
+source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#fea42517fb215751ba73af3c4fce53131d3ade41"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -250,7 +250,7 @@ dependencies = [
 [[package]]
 name = "gdnative-impl-proc-macros"
 version = "0.10.0"
-source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#caaa411ac444e7bf2bcd103fa065293e60563aef"
+source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#fea42517fb215751ba73af3c4fce53131d3ade41"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -260,7 +260,7 @@ dependencies = [
 [[package]]
 name = "gdnative-sys"
 version = "0.10.0"
-source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#caaa411ac444e7bf2bcd103fa065293e60563aef"
+source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#fea42517fb215751ba73af3c4fce53131d3ade41"
 dependencies = [
  "bindgen",
  "libc",
@@ -273,7 +273,7 @@ dependencies = [
 [[package]]
 name = "gdnative_bindings_generator"
 version = "0.10.0"
-source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#caaa411ac444e7bf2bcd103fa065293e60563aef"
+source = "git+https://github.com/Bromeon/godot-rust.git?branch=yolo#fea42517fb215751ba73af3c4fce53131d3ade41"
 dependencies = [
  "heck",
  "memchr",
