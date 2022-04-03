@@ -130,7 +130,8 @@ impl Terrain {
 	/// given `center` and `radius` values.
 	pub fn get_average_blight_in_circle(&self, center: Vector3, radius: f32) -> u8 {
 		let center_grid = self.world2grid(center);
-		let radius_grid = ((radius / self.measurements.plane_size.x) * 256.0) as usize;
+		let half_size = TerrainArray::WIDTH as f32 / 2.0;
+		let radius_grid = ((radius / self.measurements.plane_size.x) * half_size) as usize;
 		let circle = Shape::Circle {
 			center: center_grid,
 			radius: radius_grid,
@@ -142,7 +143,8 @@ impl Terrain {
 	#[export]
 	pub fn clean_circle(&mut self, _base: &Node, center: Vector3, radius: f32) {
 		let center_grid = self.world2grid(center);
-		let radius_grid = ((radius / self.measurements.plane_size.x) * 256.0) as usize;
+		let half_size = TerrainArray::WIDTH as f32 / 2.0;
+		let radius_grid = ((radius / self.measurements.plane_size.x) * half_size) as usize;
 		let circle = Shape::Circle {
 			center: center_grid,
 			radius: radius_grid,

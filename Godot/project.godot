@@ -36,6 +36,10 @@ config/name="LudumDare50"
 run/main_scene="res://Scene/World/World.tscn"
 config/icon="res://icon.png"
 
+[debug]
+
+settings/stdout/print_fps=true
+
 [input]
 
 forward={

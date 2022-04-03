@@ -13,8 +13,8 @@ pub enum Shape {
 }
 
 impl TerrainArray {
-    pub const WIDTH: usize = 512;
-    pub const HEIGHT: usize = 512;
+    pub const WIDTH: usize = 256;
+    pub const HEIGHT: usize = 256;
 
     pub fn new() -> Self {
         Self {
