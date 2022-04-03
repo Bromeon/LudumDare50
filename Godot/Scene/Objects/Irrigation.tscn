@@ -16,7 +16,7 @@ transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0 )
 script = ExtResource( 1 )
 
 [node name="Core" type="StaticBody" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
+transform = Transform( 1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 1.5, 0 )
 
 [node name="CollisionShape" type="CollisionShape" parent="Core"]
 shape = SubResource( 3 )
@@ -27,7 +27,7 @@ skeleton = NodePath("../..")
 material/0 = null
 
 [node name="Roof" type="StaticBody" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0 )
+transform = Transform( 1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 4.5, 0 )
 
 [node name="CollisionShape" type="CollisionShape" parent="Roof"]
 shape = SubResource( 4 )

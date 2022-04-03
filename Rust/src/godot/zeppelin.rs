@@ -30,7 +30,7 @@ impl Zeppelin {
 			velocity: Vector2::ZERO,
 			look_dir: Vector2::ZERO,
 			drag: 0.99,
-			acc_factor: 1.0,
+			acc_factor: 2.0,
 			cam_angle: Vector3::new(0.0, -7.0, -4.0),
 			cam_acc_factor: 3.0,
 		}

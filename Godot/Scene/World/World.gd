@@ -13,13 +13,18 @@ var matHighlighted: SpatialMaterial
 var matAffected: SpatialMaterial
 
 var lastHighlightedObj: Spatial = null
-var lastAffectedIds: Array = []
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var scene = preload("res://Scene/Objects/Structure.tscn")
-	$SpatialApi.load(scene)
+	var scenes = {
+		Water = preload("res://Scene/Objects/Water.tscn"),
+		Ore = preload("res://Scene/Objects/Ore.tscn"),
+		Pump = preload("res://Scene/Objects/Pump.tscn"),
+		Irrigation = preload("res://Scene/Objects/Irrigation.tscn"),
+	}
+
+	$SpatialApi.load(scenes)
 
 	matDefault = SpatialMaterial.new()
 	matHighlighted = SpatialMaterial.new()
@@ -31,14 +36,14 @@ func _ready():
 
 
 func _process(dt: float):
-    # Escape
-    if Input.is_action_just_pressed("ui_cancel"):
-        get_tree().quit()
-        return
+	# Escape
+	if Input.is_action_just_pressed("ui_cancel"):
+		get_tree().quit()
+		return
 
-    $SpatialApi.update_blight_impact(dt)
+	$SpatialApi.update_blight_impact(dt)
 
-    raycast()
+	raycast()
 
 
 func updateHovered() -> void:
@@ -58,23 +63,27 @@ func raycast():
 	var result = spaceState.intersect_ray(origin, origin + normal * RAY_LENGTH)
 	#print(result)
 
+	for node in $SpatialApi/Structures.get_children():
+		node.applyMaterial(matDefault)
+
 	var collider = result.get("collider")
 	if collider is StaticBody:
 		var hovered: Spatial = collider.get_parent()
-		hovered.applyMaterial(matHighlighted)
 
 		lastHighlightedObj = hovered
+		hovered.applyMaterial(matHighlighted)
+
 		$EffectRadius.translation = lastHighlightedObj.translation
 		$EffectRadius.visible = true
 
-		var affected = $SpatialApi.query_radius(hovered.global_transform.origin, EFFECT_RADIUS)
-		updateAffected(hovered, affected)
-
-	elif lastHighlightedObj != null:
+		var affectedIds = $SpatialApi.query_radius(hovered.global_transform.origin, EFFECT_RADIUS)
+		for id in affectedIds:
+			var node = instance_from_id(id)
+			if node != hovered:
+				node.applyMaterial(matAffected)
+	
+	else:
 		$EffectRadius.visible = false
-		lastHighlightedObj.applyMaterial(matDefault)
-		lastHighlightedObj = null
-		updateAffected(null, [])
 
 
 # Mouse position projected onto XY plane (z=0)
@@ -93,17 +102,3 @@ func projectMousePos(localMousePos: Vector2) -> Vector3:
 
 	#print("Projected: ", projection)
 	return projection
-
-
-func updateAffected(affector, affectedIds: Array):
-	for id in lastAffectedIds:
-		var node = instance_from_id(id)
-		if affector == null || node != affector:
-			node.applyMaterial(matDefault)
-
-	for id in affectedIds:
-		var node = instance_from_id(id)
-		if affector == null || node != affector:
-			node.applyMaterial(matAffected)
-
-	lastAffectedIds = affectedIds

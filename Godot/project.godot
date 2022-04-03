@@ -40,6 +40,11 @@ config/icon="res://icon.png"
 
 settings/stdout/print_fps=true
 
+[display]
+
+window/size/width=1200
+window/size/height=800
+
 [input]
 
 forward={
