@@ -1,6 +1,11 @@
 use std::{
     collections::HashMap,
-    sync::mpsc::{Receiver, Sender},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        mpsc::{Receiver, Sender},
+        Arc,
+    },
+    thread::JoinHandle,
     time::Duration,
 };
 
@@ -13,6 +18,8 @@ pub struct TerrainArray {
     shapes: HashMap<Shape, u8>,
     shapes_sender: Sender<HashMap<Shape, u8>>,
     outputs_receiver: Receiver<Array2<u8>>,
+    thread: Option<JoinHandle<()>>,
+    shutdown: Arc<AtomicBool>,
 }
 
 pub const BLIGHT: u8 = u8::MAX;
@@ -32,21 +39,31 @@ impl TerrainArray {
             std::sync::mpsc::channel();
         let (outputs_sender, outputs_receiver) = std::sync::mpsc::channel();
 
-        std::thread::spawn(move || {
+        let shutdown = Arc::new(AtomicBool::new(false));
+        let shutdown_inner = shutdown.clone();
+
+        let thread = std::thread::spawn(move || {
             let mut array = Array2::from_elem((Self::WIDTH, Self::HEIGHT), CLEAN);
             let ijs =
                 Array2::from_shape_fn((Self::WIDTH, Self::HEIGHT), |(i, j)| (i as f64, j as f64));
 
             outputs_sender.send(array.clone()).unwrap();
-            while let Ok(input) = shapes_receiver.recv() {
-                for (shape, fill) in input.into_iter() {
-                    Self::do_fill_shape(&mut array, shape, fill);
-                }
-                Self::do_dilate(&ijs, &mut array);
-                outputs_sender.send(array.clone()).unwrap();
 
-                std::thread::sleep(Duration::from_millis(500));
+            println!("Starting thread");
+            while !shutdown_inner.load(Ordering::Relaxed) {
+                println!("Waiting for input");
+                if let Ok(input) = shapes_receiver.recv() {
+                    println!("Advance blight");
+                    for (shape, fill) in input.into_iter() {
+                        Self::do_fill_shape(&mut array, shape, fill);
+                    }
+                    Self::do_dilate(&ijs, &mut array);
+                    outputs_sender.send(array.clone()).unwrap();
+
+                    std::thread::sleep(Duration::from_millis(500));
+                }
             }
+            println!("Shutting down thread");
         });
 
         Self {
@@ -54,7 +71,14 @@ impl TerrainArray {
             shapes: HashMap::new(),
             shapes_sender,
             outputs_receiver,
+            thread: Some(thread),
+            shutdown,
         }
+    }
+
+    pub fn shutdown(&mut self) {
+        self.shutdown.store(true, Ordering::Relaxed);
+        self.thread.take().unwrap().join().unwrap();
     }
 
     fn do_fill_shape(data_write: &mut Array2<u8>, shape: Shape, fill: u8) {

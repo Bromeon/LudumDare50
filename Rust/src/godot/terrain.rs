@@ -152,4 +152,9 @@ impl Terrain {
 		};
 		self.array.fill_shape(circle, CLEAN);
 	}
+
+	#[export]
+	fn _exit_tree(&mut self, _base: &Node) {
+		self.array.shutdown();
+	}
 }
