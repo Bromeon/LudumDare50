@@ -8,7 +8,7 @@ size = Vector2( 4, 4 )
 [sub_resource type="ConvexPolygonShape" id=4]
 points = PoolVector3Array( 2, 2, 0, 2, -2, 0, -2, 2, 0, -2, -2, 0 )
 
-[node name="Structure" type="Spatial"]
+[node name="Water" type="Spatial"]
 transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0 )
 script = ExtResource( 1 )
 

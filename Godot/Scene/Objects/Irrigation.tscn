@@ -11,7 +11,7 @@ points = PoolVector3Array( 0, 1, 1, 1, -1, 1, 0, 1, -1, -1, -1, 1, 1, -1, -1, -1
 
 [sub_resource type="PrismMesh" id=1]
 
-[node name="Structure" type="Spatial"]
+[node name="Irrigation" type="Spatial"]
 transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0 )
 script = ExtResource( 1 )
 

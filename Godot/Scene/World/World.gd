@@ -17,6 +17,8 @@ var matAffected: SpatialMaterial
 var lastHighlightedObj: Spatial = null
 var selectedObj: Spatial = null
 
+var ghost: Spatial
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -40,6 +42,8 @@ func _ready():
 	$EffectRadius.scale = 2 * Vector3(EFFECT_RADIUS, 1, EFFECT_RADIUS)
 	$BuildRadius.scale = 2 * Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
 
+	ghost = $Ghosts/Pump
+	
 
 func _process(dt: float):
 	# Escape
@@ -99,20 +103,34 @@ func raycast():
 			if node != hovered && node != selectedObj:
 				node.applyMaterial(matAffected)
 
+		# Hide ghost
+		ghost.visible = false
+
 	# Hovering outside	
 	else:
 		$EffectRadius.visible = false
+
+		var inBuildRadius: bool = false
+		var groundPos = null
+		if selectedObj:
+			groundPos = projectMousePos(localMousePos)
+			inBuildRadius = groundPos.distance_squared_to(selectedObj.translation) < BUILD_RADIUS * BUILD_RADIUS
 
 		# De-selected (click on ground)
 		if Input.is_action_just_pressed("left_click"):
 			$BuildRadius.visible = false
 			selectedObj = null
 
-		if Input.is_action_just_pressed("right_click"):
-			if selectedObj:
-				var groundPos = projectMousePos(localMousePos)
-				if groundPos.distance_squared_to(selectedObj.translation) < BUILD_RADIUS * BUILD_RADIUS:
-					$SpatialApi.add_structure(groundPos, "Pump")
+		elif Input.is_action_just_pressed("right_click"):
+			if inBuildRadius:
+				$SpatialApi.add_structure(groundPos, "Pump")
+
+		# Drag ghost
+		if inBuildRadius:
+			ghost.visible = true
+			ghost.translation = groundPos
+		else:
+			ghost.visible = false
 
 			
 # Mouse position projected onto XY plane (z=0)
