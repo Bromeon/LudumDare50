@@ -152,7 +152,6 @@ impl SpatialApi {
 				if Self::iter_structures_in_radius(rtree, ore.position(), IRRIGATION_CLEAN_RADIUS)
 					.any(|other| matches!(other.ty(), StructureType::Ore))
 				{
-					println!("Collect 5 ore");
 					ore_collected += ORE_PER_COLLECTION;
 				}
 			}
