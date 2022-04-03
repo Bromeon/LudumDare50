@@ -10,9 +10,11 @@ const EFFECT_RADIUS = 4.0
 
 var matDefault: SpatialMaterial
 var matHighlighted: SpatialMaterial
+var matSelected: SpatialMaterial
 var matAffected: SpatialMaterial
 
 var lastHighlightedObj: Spatial = null
+var selectedObj: Spatial = null
 
 
 # Called when the node enters the scene tree for the first time.
@@ -28,7 +30,9 @@ func _ready():
 
 	matDefault = SpatialMaterial.new()
 	matHighlighted = SpatialMaterial.new()
-	matHighlighted.albedo_color = Color.crimson
+	matHighlighted.albedo_color = Color.red
+	matSelected = SpatialMaterial.new()
+	matSelected.albedo_color = Color.crimson
 	matAffected = SpatialMaterial.new()
 	matAffected.albedo_color = Color.goldenrod
 
@@ -64,14 +68,20 @@ func raycast():
 	#print(result)
 
 	for node in $SpatialApi/Structures.get_children():
-		node.applyMaterial(matDefault)
+		if node != selectedObj:
+			node.applyMaterial(matDefault)
 
 	var collider = result.get("collider")
 	if collider is StaticBody:
 		var hovered: Spatial = collider.get_parent()
 
+		if Input.is_action_just_pressed("left_click"):
+			hovered.applyMaterial(matSelected)
+			selectedObj = hovered
+
 		lastHighlightedObj = hovered
-		hovered.applyMaterial(matHighlighted)
+		if hovered != selectedObj:
+			hovered.applyMaterial(matHighlighted)
 
 		$EffectRadius.translation = lastHighlightedObj.translation
 		$EffectRadius.visible = true
@@ -84,6 +94,9 @@ func raycast():
 	
 	else:
 		$EffectRadius.visible = false
+
+		if Input.is_action_just_pressed("left_click"):
+			selectedObj = null
 
 
 # Mouse position projected onto XY plane (z=0)
