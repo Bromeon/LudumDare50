@@ -4,7 +4,7 @@ use rstar::{RTree, AABB};
 //use std::collections::HashMap;
 
 use crate::godot::Terrain;
-use crate::objects::{Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
+use crate::objects::{Structure, StructureType, IRRIGATION_CLEAN_RADIUS, Pipe};
 use crate::{Vector2Ext, Vector3Ext};
 
 const DAMAGE_PER_SECOND: f32 = 80.0;
@@ -21,6 +21,7 @@ const MINER_TICK_FREQ: usize = 60 * 2;
 pub struct SpatialApi {
 	//structures_by_id: HashMap<i64, Structure>,
 	rtree: RTree<Structure>,
+	pipes: Vec<Pipe>,
 
 	terrain: Option<Instance<Terrain>>,
 
@@ -37,6 +38,7 @@ impl SpatialApi {
 		Self {
 			//structures_by_id: HashMap::new(),
 			rtree: RTree::new(),
+			pipes: Vec::new(),
 			terrain: None,
 			stc_scenes: Dictionary::new_shared(),
 			ore_amount: 0,
@@ -207,9 +209,16 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn add_structure(&mut self, base: &Spatial, pos: Vector3, ty_name: String) -> i64 {
+	fn add_structure(&mut self, base: &Spatial, pos: Vector3, ty_name: String, pipe_from: Option<Ref<Spatial>>) -> i64 {
 		let stc = self.instance_structure(base, pos.to_2d(), &ty_name);
 		godot_print!("Add structure {:?}", stc);
+
+		if let Some(node) = pipe_from {
+			let from_id = node.get_instance_id();
+			let to_id = stc.instance_id();
+
+			self.pipes.push(Pipe::new(from_id, to_id));
+		}
 
 		//self.structures_by_id.insert(id, stc);
 		self.rtree.insert(stc);
