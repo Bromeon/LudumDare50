@@ -8,7 +8,7 @@ use crate::objects::Structure;
 use crate::{Vector2Ext, Vector3Ext};
 
 const STRUCTURE_RADIUS: f32 = 5.0;
-const DAMAGE_PER_SECOND: f32 = 10.0;
+const DAMAGE_PER_SECOND: f32 = 80.0;
 const STRUCTURE_HEALTH: f32 = 100.0;
 
 #[derive(NativeClass)]
@@ -55,16 +55,10 @@ impl SpatialApi {
 
 	#[export]
 	fn update_blight_impact(&mut self, _base: &Spatial, dt: f32) {
-
-		self
-			.terrain
-			.as_ref()
-			.map(|i| {
-				i.map(|t, _| Self::update_blight_impl(&mut self.rtree, dt, t))
-					.unwrap();
-			});
-
-
+		self.terrain.as_ref().map(|inst| {
+			inst.map(|terrain, _| Self::update_blight_impl(&mut self.rtree, dt, terrain))
+				.unwrap();
+		});
 	}
 
 	fn update_blight_impl(rtree: &mut RTree<Structure>, dt: f32, terrain: &Terrain) {
@@ -76,20 +70,25 @@ impl SpatialApi {
 
 			let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
 			stc.deal_damage(damage);
+			//println!("Damage {:?} with {}", stc, damage);
 
 			if !stc.is_alive() {
+				//println!("Kill {:?}", stc);
 				to_remove.push(stc.clone());
 			}
 		}
 
 		// RTree API only allows removal one at a time
-		for elem in to_remove {
-			rtree.remove(&elem);
+		if !to_remove.is_empty() {
+			println!("Remove {} structures", to_remove.len());
 		}
 
-		/*self.rtree.remove_with_selection_function(|stc:&Structure| {
-			!stc.is_alive()
-		});*/
+		for elem in to_remove.iter() {
+			rtree.remove(elem);
+
+			let node = unsafe { Node::from_instance_id(elem.instance_id()) };
+			node.queue_free();
+		}
 	}
 
 	#[export]

@@ -128,8 +128,7 @@ impl Terrain {
 
 	/// Returns the average blight value (between 0 and 255) of the circle with
 	/// given `center` and `radius` values.
-	//#[export]
-	pub fn get_average_blight_in_circle(&self, /*_base: &Node,*/ center: Vector3, radius: f32) -> u8 {
+	pub fn get_average_blight_in_circle(&self, center: Vector3, radius: f32) -> u8 {
 		let center_grid = self.world2grid(center);
 		let radius_grid = ((radius / self.measurements.plane_size.x) * 256.0) as usize;
 		let circle = Shape::Circle {

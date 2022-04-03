@@ -16,10 +16,10 @@ impl PartialEq for Structure {
 	}
 }
 
-impl Eq for Structure{}
+impl Eq for Structure {}
 
 impl Structure {
-	pub fn new(position: Vector2, id: i64, health:f32) -> Structure {
+	pub fn new(position: Vector2, id: i64, health: f32) -> Structure {
 		Self {
 			position,
 			id,

@@ -27,14 +27,16 @@ func _ready():
 	matAffected = SpatialMaterial.new()
 	matAffected.albedo_color = Color.goldenrod
 
-	$EffectRadius.scale = Vector3(EFFECT_RADIUS, 1, EFFECT_RADIUS)
+	$EffectRadius.scale = 2 * Vector3(EFFECT_RADIUS, 1, EFFECT_RADIUS)
 
 
-func _process(_delta):
+func _process(dt: float):
     # Escape
     if Input.is_action_just_pressed("ui_cancel"):
         get_tree().quit()
         return
+
+    $SpatialApi.update_blight_impact(dt)
 
     raycast()
 
