@@ -97,8 +97,8 @@ impl Terrain {
 
 		self.array.fill_shape(
 			Shape::Circle {
-				center: [50, 50],
-				radius: 10,
+				center: [150, 150],
+				radius: 40,
 			},
 			BLIGHT,
 		);
@@ -109,7 +109,7 @@ impl Terrain {
 	}
 
 	#[export]
-	fn _process(&mut self, _base: &Node, _dt: f32) {
+	fn _physics_process(&mut self, _base: &Node, _dt: f32) {
 		self.frame_count += 1;
 		if self.frame_count % 7 == 0 {
 			self.array.dilate();
@@ -138,4 +138,30 @@ impl Terrain {
 			);
 		(normalized + self.measurements.top_left) * self.measurements.plane_size
 	}
+
+	/// Returns the average blight value (between 0 and 255) of the circle with
+	/// given `center` and `radius` values.
+	#[export]
+	pub fn get_average_blight_in_circle(&self, _base: &Node, center: Vector3, radius: f32) -> u8 {
+		let center_grid = self.world2grid(center);
+		let radius_grid = ((radius / self.measurements.plane_size.x) * 256.0) as usize;
+		let circle = Shape::Circle {
+			center: center_grid,
+			radius: radius_grid,
+		};
+		self.array.query_shape_avg(circle)
+	}
+
+	/// Cleans a circle from blight 
+	#[export]
+	pub fn clean_circle(&mut self, _base: &Node, center: Vector3, radius: f32) {
+		let center_grid = self.world2grid(center);
+		let radius_grid = ((radius / self.measurements.plane_size.x) * 256.0) as usize;
+		let circle = Shape::Circle {
+			center: center_grid,
+			radius: radius_grid,
+		};
+		self.array.fill_shape(circle, CLEAN);
+	}
+
 }
