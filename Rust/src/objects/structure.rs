@@ -27,7 +27,21 @@ impl Structure {
 			position,
 			id,
 			health,
-			powered: true,
+			powered: dbg!(match dbg!(ty) {
+				StructureType::Water => true,
+				StructureType::Ore => false,
+				StructureType::Pump => false,
+				StructureType::Irrigation => false,
+			}),
+		}
+	}
+
+	pub fn takes_damage(&self) -> bool {
+		match self.ty {
+			StructureType::Water => false,
+			StructureType::Ore => false,
+			StructureType::Pump => true,
+			StructureType::Irrigation => true,
 		}
 	}
 

@@ -7,7 +7,8 @@ use crate::godot::Terrain;
 use crate::objects::{Structure, StructureType};
 use crate::{Vector2Ext, Vector3Ext};
 
-const STRUCTURE_RADIUS: f32 = 5.0;
+const DAMAGE_RADIUS: f32 = 1.5;
+const CLEAN_RADIUS: f32 = 4.0;
 const DAMAGE_PER_SECOND: f32 = 80.0;
 const STRUCTURE_HEALTH: f32 = 100.0;
 
@@ -38,7 +39,7 @@ impl SpatialApi {
 
 		let variants = ["Water", "Ore", "Pump", "Irrigation"];
 		for pos in random_positions(20) {
-			let v = variants.iter().choose(&mut thread_rng()).unwrap();
+			let v = variants.into_iter().choose(&mut thread_rng()).unwrap();
 			let scene = scenes.get(v).unwrap().to_object::<PackedScene>().unwrap();
 			let instanced = scene.instance(0).unwrap();
 			let instanced = instanced.cast::<Spatial>();
@@ -51,7 +52,13 @@ impl SpatialApi {
 				.add_child(instanced, false);
 
 			structures.push(Structure::new(
-				StructureType::Irrigation,
+				match v {
+					"Water" => StructureType::Water,
+					"Ore" => StructureType::Ore,
+					"Pump" => StructureType::Pump,
+					"Irrigation" => StructureType::Irrigation,
+					_ => unreachable!(),
+				},
 				pos,
 				id,
 				STRUCTURE_HEALTH,
@@ -66,30 +73,34 @@ impl SpatialApi {
 
 	#[export]
 	fn update_blight_impact(&mut self, _base: &Spatial, dt: f32) {
-		self.terrain.as_ref().map(|inst| {
-			inst.map(|terrain, _| Self::update_blight_impl(&mut self.rtree, dt, terrain))
+		self.terrain.as_mut().map(|inst| {
+			inst.map_mut(|terrain, _| Self::update_blight_impl(&mut self.rtree, dt, terrain))
 				.unwrap();
 		});
 	}
 
 	#[profiling::function]
 	#[allow(unreachable_code)]
-	fn update_blight_impl(rtree: &mut RTree<Structure>, dt: f32, terrain: &Terrain) {
-		return;
+	fn update_blight_impl(rtree: &mut RTree<Structure>, dt: f32, terrain: &mut Terrain) {
 		let mut to_remove = vec![];
 
 		for stc in rtree.iter_mut() {
 			profiling::scope!("blight");
-			let blight =
-				terrain.get_average_blight_in_circle(stc.position().to_3d(), STRUCTURE_RADIUS);
 
-			let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
-			stc.deal_damage(damage);
+			if stc.is_powered() {
+				terrain.clean_circle(stc.position().to_3d(), CLEAN_RADIUS);
+			} else if stc.takes_damage() {
+				let blight =
+					terrain.get_average_blight_in_circle(stc.position().to_3d(), DAMAGE_RADIUS);
+
+				let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
+				stc.deal_damage(damage);
+			}
 			//println!("Damage {:?} with {}", stc, damage);
 
 			if !stc.is_alive() {
 				//println!("Kill {:?}", stc);
-				to_remove.push(stc.clone());
+				to_remove.push(*stc);
 			}
 		}
 

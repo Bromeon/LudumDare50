@@ -140,9 +140,8 @@ impl Terrain {
 	}
 
 	/// Cleans a circle from blight
-	#[export]
 	#[profiling::function]
-	pub fn clean_circle(&mut self, _base: &Node, center: Vector3, radius: f32) {
+	pub fn clean_circle(&mut self, center: Vector3, radius: f32) {
 		let center_grid = self.world2grid(center);
 		let half_size = TerrainArray::WIDTH as f32 / 2.0;
 		let radius_grid = ((radius / self.measurements.plane_size.x) * half_size) as usize;
