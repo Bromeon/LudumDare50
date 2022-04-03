@@ -85,6 +85,8 @@ material/0 = SubResource( 3 )
 [node name="SpatialApi" type="Spatial" parent="."]
 script = ExtResource( 2 )
 
+[node name="Structures" type="Spatial" parent="SpatialApi"]
+
 [node name="EffectRadius" type="MeshInstance" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.051, 0 )
 mesh = SubResource( 1 )
