@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://Scene/Objects/Structure.gd" type="Script" id=1]
+
+[sub_resource type="CylinderMesh" id=1]
+top_radius = 1.5
+height = 1.0
+radial_segments = 5
+
+[sub_resource type="ConvexPolygonShape" id=2]
+points = PoolVector3Array( -0.881701, 0.5, -1.21353, -0.823051, 0.299922, -1.13278, -1.42658, 0.5, 0.463304, 0.881422, 0.5, -1.21353, -0.587894, -0.5, -0.809259, -0.646823, -0.30002, -0.890006, -1.33163, 0.299922, 0.432492, 0.822772, 0.299922, -1.13278, 0, 0.5, 1.5, 1.42658, 0.5, 0.463304, -0.951243, -0.5, 0.308981, 0.587614, -0.5, -0.809259, -1.14144, -0.100039, 0.370604, 0.646544, -0.30002, -0.890006, 0, 0.0999413, 1.29999, 1.33135, 0.299922, 0.432492, 0.950963, -0.5, 0.308981, 0, -0.5, 0.999846, 0, -0.30002, 1.09998 )
+
+[sub_resource type="CylinderMesh" id=3]
+top_radius = 0.0
+bottom_radius = 1.5
+radial_segments = 5
+
+[sub_resource type="ConvexPolygonShape" id=4]
+points = PoolVector3Array( -0.881701, -1, -1.21353, -1.42658, -1, 0.463304, -1.14144, -0.600039, 0.370604, -0.705472, -0.600039, -0.971019, 0.881422, -1, -1.21353, 0, -1, 1.5, -0.570857, 0.199883, 0.185205, -0.529244, -0.200078, -0.728246, -0.176508, 0.599843, -0.242967, 0, 1, -0.000195026, 0.705193, -0.600039, -0.971019, 1.42658, -1, 0.463304, 0.528965, -0.200078, -0.728246 )
+
+[node name="Structure" type="Spatial"]
+transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0 )
+script = ExtResource( 1 )
+
+[node name="Core" type="StaticBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
+
+[node name="Mesh" type="MeshInstance" parent="Core"]
+mesh = SubResource( 1 )
+skeleton = NodePath("../..")
+material/0 = null
+
+[node name="CollisionShape" type="CollisionShape" parent="Core"]
+shape = SubResource( 2 )
+
+[node name="Roof" type="StaticBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0 )
+
+[node name="Mesh" type="MeshInstance" parent="Roof"]
+mesh = SubResource( 3 )
+skeleton = NodePath("../..")
+material/0 = null
+
+[node name="CollisionShape" type="CollisionShape" parent="Roof"]
+shape = SubResource( 4 )

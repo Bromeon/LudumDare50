@@ -81,7 +81,9 @@ func raycast():
 			var node = instance_from_id(id)
 			if node != hovered:
 				node.applyMaterial(matAffected)
-
+	
+	else:
+		$EffectRadius.visible = false
 
 
 # Mouse position projected onto XY plane (z=0)
