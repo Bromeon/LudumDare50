@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/SpatialApi.gdns" type="Script" id=2]
@@ -48,14 +48,26 @@ shader_param/Splatmap = SubResource( 5 )
 shader_param/Grass = ExtResource( 7 )
 shader_param/Blight = ExtResource( 5 )
 
-[sub_resource type="SpatialMaterial" id=2]
+[sub_resource type="SpatialMaterial" id=7]
 flags_transparent = true
-albedo_color = Color( 0.494118, 0.411765, 0.411765, 0.443137 )
+albedo_color = Color( 0.67451, 0.309804, 0.533333, 0.443137 )
 metallic = 0.47
 metallic_specular = 0.52
 
-[sub_resource type="CylinderMesh" id=1]
-material = SubResource( 2 )
+[sub_resource type="CylinderMesh" id=8]
+material = SubResource( 7 )
+top_radius = 0.5
+bottom_radius = 0.5
+height = 0.1
+
+[sub_resource type="SpatialMaterial" id=9]
+flags_transparent = true
+albedo_color = Color( 0.266667, 0.454902, 0.815686, 0.443137 )
+metallic = 0.47
+metallic_specular = 0.52
+
+[sub_resource type="CylinderMesh" id=10]
+material = SubResource( 9 )
 top_radius = 0.5
 bottom_radius = 0.5
 height = 0.1
@@ -88,7 +100,15 @@ script = ExtResource( 2 )
 
 [node name="EffectRadius" type="MeshInstance" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.051, 0 )
-mesh = SubResource( 1 )
+visible = false
+mesh = SubResource( 8 )
+skeleton = NodePath("../SpatialApi")
+material/0 = null
+
+[node name="BuildRadius" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.051, 0 )
+visible = false
+mesh = SubResource( 10 )
 skeleton = NodePath("../SpatialApi")
 material/0 = null
 

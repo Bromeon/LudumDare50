@@ -6,6 +6,7 @@ const SpatialApi = preload("res://Native/SpatialApi.gdns")
 const RAY_LENGTH = 1000.0
 
 const EFFECT_RADIUS = 4.0
+const BUILD_RADIUS = 6.0
 
 
 var matDefault: SpatialMaterial
@@ -30,13 +31,14 @@ func _ready():
 
 	matDefault = SpatialMaterial.new()
 	matHighlighted = SpatialMaterial.new()
-	matHighlighted.albedo_color = Color.red
+	matHighlighted.albedo_color = Color.crimson
 	matSelected = SpatialMaterial.new()
-	matSelected.albedo_color = Color.crimson
+	matSelected.albedo_color = Color.darksalmon
 	matAffected = SpatialMaterial.new()
 	matAffected.albedo_color = Color.goldenrod
 
 	$EffectRadius.scale = 2 * Vector3(EFFECT_RADIUS, 1, EFFECT_RADIUS)
+	$BuildRadius.scale = 2 * Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
 
 
 func _process(dt: float):
@@ -75,10 +77,14 @@ func raycast():
 	if collider is StaticBody:
 		var hovered: Spatial = collider.get_parent()
 
+		# Left click selected
 		if Input.is_action_just_pressed("left_click"):
 			hovered.applyMaterial(matSelected)
 			selectedObj = hovered
+			$BuildRadius.translation = lastHighlightedObj.translation
+			$BuildRadius.visible = true
 
+		# Just hovering
 		lastHighlightedObj = hovered
 		if hovered != selectedObj:
 			hovered.applyMaterial(matHighlighted)
@@ -86,16 +92,20 @@ func raycast():
 		$EffectRadius.translation = lastHighlightedObj.translation
 		$EffectRadius.visible = true
 
+		# Mark affected buildings (in effect radius)
 		var affectedIds = $SpatialApi.query_radius(hovered.global_transform.origin, EFFECT_RADIUS)
 		for id in affectedIds:
 			var node = instance_from_id(id)
-			if node != hovered:
+			if node != hovered && node != selectedObj:
 				node.applyMaterial(matAffected)
-	
+
+	# Hovering outside	
 	else:
 		$EffectRadius.visible = false
 
+		# De-selected (click on ground)
 		if Input.is_action_just_pressed("left_click"):
+			$BuildRadius.visible = false
 			selectedObj = null
 
 
