@@ -20,6 +20,14 @@ pub struct Zeppelin {
 	pub cam_angle: Vector3,
 }
 
+fn normalize_or_zero(v: Vector2) -> Vector2 {
+	if v.length_squared() > 0.0 {
+		v.normalized()
+	} else {
+		v
+	}
+}
+
 #[methods]
 impl Zeppelin {
 	fn new(_base: &Spatial) -> Self {
@@ -49,14 +57,6 @@ impl Zeppelin {
 		let x =
 			input.get_action_strength("right", false) - input.get_action_strength("left", false);
 
-		fn normalize_or_zero(v: Vector2) -> Vector2 {
-			if v.length_squared() > 0.0 {
-				v.normalized()
-			} else {
-				v
-			}
-		}
-
 		self.acceleration = normalize_or_zero(Vector2::new(x as f32, y as f32)) * self.acc_factor;
 	}
 
@@ -77,7 +77,8 @@ impl Zeppelin {
 	}
 
 	fn rotate_pivot(&mut self, dt: f32) {
-		self.look_dir = self.look_dir.linear_interpolate(self.velocity, dt * 1.0);
+		self.look_dir =
+			normalize_or_zero(self.look_dir.linear_interpolate(self.velocity, dt * 1.0));
 		let pivot = self.pivot.unwrap();
 		if self.look_dir.length_squared() > 0.0 {
 			pivot.look_at(
