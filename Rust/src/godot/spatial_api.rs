@@ -4,11 +4,17 @@ use rstar::{RTree, AABB};
 //use std::collections::HashMap;
 
 use crate::godot::Terrain;
-use crate::objects::{Structure, StructureType};
+use crate::objects::{Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
 use crate::{Vector2Ext, Vector3Ext};
 
 const DAMAGE_PER_SECOND: f32 = 80.0;
 const STRUCTURE_HEALTH: f32 = 100.0;
+
+/// The amount of collected ore per simulation tick when there's an active miner
+const ORE_PER_COLLECTION: u32 = 5;
+/// The frequency, in number of physics frames, after which active miners will
+/// collect ore
+const MINER_TICK_FREQ: usize = 60 * 2;
 
 #[derive(NativeClass)]
 #[inherit(Spatial)]
@@ -19,6 +25,8 @@ pub struct SpatialApi {
 	terrain: Option<Instance<Terrain>>,
 
 	stc_scenes: Dictionary,
+	ore_amount: u32,
+	frame_count: usize,
 }
 
 #[methods]
@@ -31,6 +39,8 @@ impl SpatialApi {
 			rtree: RTree::new(),
 			terrain: None,
 			stc_scenes: Dictionary::new_shared(),
+			ore_amount: 0,
+			frame_count: 0,
 		}
 	}
 
@@ -78,22 +88,34 @@ impl SpatialApi {
 			_ => unreachable!(),
 		};
 
-		let stc = Structure::new(ty, pos, id, STRUCTURE_HEALTH);
-		stc
+		Structure::new(ty, pos, id, STRUCTURE_HEALTH)
 	}
 
 	#[export]
 	fn update_blight_impact(&mut self, _base: &Spatial, dt: f32) {
-		self.terrain.as_mut().map(|inst| {
-			inst.map_mut(|terrain, _| Self::update_blight_impl(&mut self.rtree, dt, terrain))
+		self.frame_count += 1;
+		if let Some(inst) = self.terrain.as_mut() {
+			let collected_ore = inst
+				.map_mut(|terrain, _| {
+					Self::update_blight_impl(&mut self.rtree, dt, terrain, self.frame_count)
+				})
 				.unwrap();
-		});
+			self.ore_amount += collected_ore;
+		}
 	}
 
+	/// Returns the amount of ore collected
 	#[profiling::function]
 	#[allow(unreachable_code)]
-	fn update_blight_impl(rtree: &mut RTree<Structure>, dt: f32, terrain: &mut Terrain) {
+	fn update_blight_impl(
+		rtree: &mut RTree<Structure>,
+		dt: f32,
+		terrain: &mut Terrain,
+		frame_count: usize,
+	) -> u32 {
 		let mut to_remove = vec![];
+
+		let mut ores = vec![];
 
 		for stc in rtree.iter_mut() {
 			profiling::scope!("blight");
@@ -107,10 +129,12 @@ impl SpatialApi {
 				let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
 				stc.deal_damage(damage);
 			}
-			//println!("Damage {:?} with {}", stc, damage);
+
+			if frame_count % MINER_TICK_FREQ == 0 && matches!(stc.ty(), StructureType::Ore) {
+				ores.push(*stc);
+			}
 
 			if !stc.is_alive() {
-				//println!("Kill {:?}", stc);
 				to_remove.push(*stc);
 			}
 		}
@@ -120,12 +144,49 @@ impl SpatialApi {
 			//println!("Remove {} structures", to_remove.len());
 		}
 
+		let mut ore_collected = 0;
+		if frame_count % MINER_TICK_FREQ == 0 {
+			for ore in ores {
+				// If there's at least one irrigation covering this ore, then it
+				// will collect ore for the frame.
+				if Self::iter_structures_in_radius(rtree, ore.position(), IRRIGATION_CLEAN_RADIUS)
+					.any(|other| matches!(other.ty(), StructureType::Ore))
+				{
+					println!("Collect 5 ore");
+					ore_collected += ORE_PER_COLLECTION;
+				}
+			}
+		}
+
 		for elem in to_remove.iter() {
 			rtree.remove(elem);
 
 			let node = unsafe { Node::from_instance_id(elem.instance_id()) };
 			node.queue_free();
 		}
+
+		ore_collected
+	}
+
+	fn iter_structures_in_radius(
+		rtree: &RTree<Structure>,
+		position: Vector2,
+		radius: f32,
+	) -> impl Iterator<Item = Structure> + '_ {
+		//self.structures_by_id.keys().copied().collect()
+		let half_size = Vector2::ONE * radius;
+		let center = position;
+		let p1 = (center - half_size).to_rstar();
+		let p2 = (center + half_size).to_rstar();
+
+		let aabb = AABB::from_corners(p1, p2);
+		//println!("Query {:?}", aabb);
+
+		let radius_sq = radius * radius;
+		rtree
+			.locate_in_envelope(&aabb)
+			.filter(move |stc| stc.position().distance_squared_to(center) < radius_sq)
+			.copied()
 	}
 
 	#[export]
@@ -149,12 +210,16 @@ impl SpatialApi {
 
 	#[export]
 	fn add_structure(&mut self, base: &Spatial, pos: Vector3, ty_name: String) {
-
 		let stc = self.instance_structure(base, pos.to_2d(), &ty_name);
 		godot_print!("Add structure {:?}", stc);
 
 		//self.structures_by_id.insert(id, stc);
 		self.rtree.insert(stc);
+	}
+
+	#[export]
+	fn get_ore_amount(&mut self, _base: &Spatial) -> u32 {
+		self.ore_amount
 	}
 }
 

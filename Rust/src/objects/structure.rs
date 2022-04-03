@@ -20,6 +20,8 @@ pub struct Structure {
 	powered: bool,
 }
 
+pub const IRRIGATION_CLEAN_RADIUS : f32 = 8.0;
+
 impl Structure {
 	pub fn new(ty: StructureType, position: Vector2, id: i64, health: f32) -> Structure {
 		Self {
@@ -27,12 +29,12 @@ impl Structure {
 			position,
 			id,
 			health,
-			powered: dbg!(match dbg!(ty) {
+			powered: match ty {
 				StructureType::Water => true,
 				StructureType::Ore => false,
 				StructureType::Pump => false,
 				StructureType::Irrigation => false,
-			}),
+			},
 		}
 	}
 
@@ -61,7 +63,7 @@ impl Structure {
 			StructureType::Water => 5.0,
 			StructureType::Ore => 0.0, // Doesn't clean
 			StructureType::Pump => 2.0,
-			StructureType::Irrigation => 8.0,
+			StructureType::Irrigation => IRRIGATION_CLEAN_RADIUS,
 		}
 	}
 
@@ -74,6 +76,9 @@ impl Structure {
 	}
 
 	// Getters
+	pub fn ty(&self) -> StructureType {
+		self.ty
+	}
 	pub fn instance_id(&self) -> i64 {
 		self.id
 	}

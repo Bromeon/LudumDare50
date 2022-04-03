@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=20 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/SpatialApi.gdns" type="Script" id=2]
@@ -8,6 +8,8 @@
 [ext_resource path="res://Environment/Environment.tres" type="Environment" id=6]
 [ext_resource path="res://Textures/Grass/Stylized_Grass_003_basecolor.jpg" type="Texture" id=7]
 [ext_resource path="res://Scene/Objects/Pump.tscn" type="PackedScene" id=8]
+[ext_resource path="res://Fonts/Coustard-Black.ttf" type="DynamicFontData" id=9]
+[ext_resource path="res://Scene/World/HUD.gd" type="Script" id=10]
 
 [sub_resource type="PlaneMesh" id=4]
 size = Vector2( 25, 25 )
@@ -73,6 +75,10 @@ top_radius = 0.5
 bottom_radius = 0.5
 height = 0.1
 
+[sub_resource type="DynamicFont" id=11]
+size = 25
+font_data = ExtResource( 9 )
+
 [node name="World" type="Spatial"]
 script = ExtResource( 1 )
 
@@ -120,3 +126,16 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.97746, 0 )
 
 [node name="Pump" parent="Ghosts" instance=ExtResource( 8 )]
 ghost = true
+
+[node name="HUD" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 10 )
+
+[node name="OreAmountLabel" type="Label" parent="HUD"]
+margin_left = 30.0
+margin_top = 21.0
+margin_right = 211.0
+margin_bottom = 99.0
+custom_fonts/font = SubResource( 11 )
+text = "Ore amount: "

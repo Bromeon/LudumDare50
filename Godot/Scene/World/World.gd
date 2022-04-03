@@ -52,6 +52,7 @@ func _process(dt: float):
 		return
 
 	$SpatialApi.update_blight_impact(dt)
+	$HUD.set_ore_amount($SpatialApi.get_ore_amount())
 
 	raycast()
 
