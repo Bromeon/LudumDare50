@@ -116,6 +116,7 @@ impl Terrain {
 
 	/// Given a position in using the inner array's coordinates, returns the
 	/// world position of that point.
+	#[allow(dead_code)]
 	fn grid2world(&self, pos: [usize; 2]) -> Vector2 {
 		let posv2 = Vector2::new(pos[0] as f32, pos[1] as f32);
 		let normalized = posv2
