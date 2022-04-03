@@ -22,18 +22,6 @@ struct PlaneMeasurements {
 	plane_size: Vector2,
 }
 
-macro_rules! get_node {
-	($base:ident, $path:expr, $typ:ty) => {
-		unsafe {
-			$base
-				.get_node($path)
-				.unwrap()
-				.cast::<$typ>()
-				.assume_shared()
-		}
-	};
-}
-
 trait Vec3Ext {
 	fn xz(&self) -> Vector2;
 }

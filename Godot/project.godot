@@ -28,12 +28,18 @@ _global_script_classes=[ {
 "class": "Terrain",
 "language": "NativeScript",
 "path": "res://Native/Terrain.gdns"
+}, {
+"base": "",
+"class": "Zeppelin",
+"language": "NativeScript",
+"path": "res://Native/Zeppelin.gdns"
 } ]
 _global_script_class_icons={
 "GodotApi": "",
 "LittleStruct": "",
 "SpatialObjects": "",
-"Terrain": ""
+"Terrain": "",
+"Zeppelin": ""
 }
 
 [application]
@@ -41,6 +47,29 @@ _global_script_class_icons={
 config/name="LudumDare50"
 run/main_scene="res://Scene/World/World.tscn"
 config/icon="res://icon.png"
+
+[input]
+
+forward={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":87,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
+ ]
+}
+back={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":83,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
+ ]
+}
+left={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":65,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
+ ]
+}
+right={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":68,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
+ ]
+}
 
 [physics]
 

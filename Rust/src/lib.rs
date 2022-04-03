@@ -1,5 +1,19 @@
 use gdnative::prelude::*;
 
+// Macros need to be defined before the modules that use them.
+#[macro_export]
+macro_rules! get_node {
+	($base:ident, $path:expr, $typ:ty) => {
+		unsafe {
+			$base
+				.get_node($path)
+				.unwrap()
+				.cast::<$typ>()
+				.assume_shared()
+		}
+	};
+}
+
 //#[path="godot/structs/mod.rs"]
 pub mod godot;
 pub mod objects;

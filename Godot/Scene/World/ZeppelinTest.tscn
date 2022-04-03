@@ -1,0 +1,36 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://Scene/Objects/Zeppelin.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Environment/Environment.tres" type="Environment" id=2]
+[ext_resource path="res://Textures/Grass/Stylized_Grass_003_basecolor.jpg" type="Texture" id=3]
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_texture = ExtResource( 3 )
+uv1_scale = Vector3( 10, 10, 10 )
+
+[sub_resource type="PlaneMesh" id=1]
+material = SubResource( 2 )
+size = Vector2( 25, 25 )
+
+[node name="Spatial" type="Spatial"]
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+mesh = SubResource( 1 )
+material/0 = null
+
+[node name="Spatial" parent="." instance=ExtResource( 1 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.949384, 0 )
+drag = 0.99
+acc_factor = 1.0
+cam_acc_factor = 3.0
+cam_angle = Vector3( 0, -3.5, -2 )
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource( 2 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.920689, -0.198343, -0.336143, 0.390297, 0.46788, 0.792941, 0, -0.861248, 0.508185, 0, 0, 0 )
+shadow_enabled = true
+
+[node name="ZeppelinCamera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.641128, 0.767434, 0, -0.767434, 0.641128, 0, 3.32652, 2.28645 )
