@@ -1,9 +1,0 @@
-[gd_resource type="NativeScript" load_steps=2 format=2]
-
-[ext_resource path="res://Native/NativeLib.gdnlib" type="GDNativeLibrary" id=1]
-
-[resource]
-resource_name = "GodotApi"
-class_name = "GodotApi"
-library = ExtResource( 1 )
-script_class_name = "GodotApi"

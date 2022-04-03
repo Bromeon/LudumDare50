@@ -2,9 +2,8 @@ use gdnative::{
 	api::{ImageTexture, MeshInstance, PlaneMesh, ShaderMaterial},
 	prelude::*,
 };
-use ndarray::{s, Array2};
+use ndarray::s;
 
-use noise::utils::PlaneMapBuilder;
 use terrain_array::*;
 
 #[derive(NativeClass, Debug)]
@@ -152,7 +151,7 @@ impl Terrain {
 		self.array.query_shape_avg(circle)
 	}
 
-	/// Cleans a circle from blight 
+	/// Cleans a circle from blight
 	#[export]
 	pub fn clean_circle(&mut self, _base: &Node, center: Vector3, radius: f32) {
 		let center_grid = self.world2grid(center);
@@ -163,5 +162,4 @@ impl Terrain {
 		};
 		self.array.fill_shape(circle, CLEAN);
 	}
-
 }

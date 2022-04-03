@@ -10,30 +10,24 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "",
-"class": "GodotApi",
+"class": "SpatialApi",
 "language": "NativeScript",
-"path": "res://Native/GodotApi.gdns"
-}, {
-"base": "",
-"class": "LittleStruct",
-"language": "NativeScript",
-"path": "res://Native/LittleStruct.gdns"
-}, {
-"base": "",
-"class": "SpatialObjects",
-"language": "NativeScript",
-"path": "res://Native/SpatialObjects.gdns"
+"path": "res://Native/SpatialApi.gdns"
 }, {
 "base": "",
 "class": "Terrain",
 "language": "NativeScript",
 "path": "res://Native/Terrain.gdns"
+}, {
+"base": "",
+"class": "Zeppelin",
+"language": "NativeScript",
+"path": "res://Native/Zeppelin.gdns"
 } ]
 _global_script_class_icons={
-"GodotApi": "",
-"LittleStruct": "",
-"SpatialObjects": "",
-"Terrain": ""
+"SpatialApi": "",
+"Terrain": "",
+"Zeppelin": ""
 }
 
 [application]

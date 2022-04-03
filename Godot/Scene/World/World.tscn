@@ -1,13 +1,11 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
-[ext_resource path="res://Native/GodotApi.gdns" type="Script" id=2]
+[ext_resource path="res://Native/SpatialApi.gdns" type="Script" id=2]
 [ext_resource path="res://Native/Terrain.gdns" type="Script" id=3]
-[ext_resource path="res://Scene/World/Spatials.gd" type="Script" id=4]
 [ext_resource path="res://Textures/Blight/Ground_Dirt_009_BaseColor.jpg" type="Texture" id=5]
 [ext_resource path="res://Environment/Environment.tres" type="Environment" id=6]
 [ext_resource path="res://Textures/Grass/Stylized_Grass_003_basecolor.jpg" type="Texture" id=7]
-[ext_resource path="res://Native/SpatialObjects.gdns" type="Script" id=8]
 
 [sub_resource type="PlaneMesh" id=4]
 size = Vector2( 25, 25 )
@@ -64,28 +62,6 @@ height = 0.1
 [node name="World" type="Spatial"]
 script = ExtResource( 1 )
 
-[node name="GodotApi" type="Spatial" parent="."]
-script = ExtResource( 2 )
-
-[node name="Terrain" type="Spatial" parent="GodotApi"]
-script = ExtResource( 3 )
-
-[node name="Mesh" type="MeshInstance" parent="GodotApi/Terrain"]
-mesh = SubResource( 4 )
-skeleton = NodePath("../../..")
-material/0 = SubResource( 3 )
-
-[node name="Spatials" type="Spatial" parent="GodotApi"]
-script = ExtResource( 4 )
-
-[node name="SpatialObjects" type="Spatial" parent="GodotApi/Spatials"]
-script = ExtResource( 8 )
-
-[node name="EffectRadius" type="MeshInstance" parent="GodotApi/Spatials"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.051, 0 )
-mesh = SubResource( 1 )
-material/0 = null
-
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.355792, 0.934565, 0, -0.934565, 0.355792, 0, 14.584, 8.30405 )
 
@@ -94,3 +70,20 @@ environment = ExtResource( 6 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.662476, 0.749083, 0, -0.749083, 0.662476, -1.19209e-07, 2.02321, 2.31921 )
+
+[node name="Terrain" type="Spatial" parent="."]
+script = ExtResource( 3 )
+
+[node name="Mesh" type="MeshInstance" parent="Terrain"]
+mesh = SubResource( 4 )
+skeleton = NodePath("../..")
+material/0 = SubResource( 3 )
+
+[node name="SpatialApi" type="Spatial" parent="."]
+script = ExtResource( 2 )
+
+[node name="EffectRadius" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.051, 0 )
+mesh = SubResource( 1 )
+skeleton = NodePath("../SpatialApi")
+material/0 = null
