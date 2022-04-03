@@ -17,7 +17,8 @@ var matAffected: SpatialMaterial
 var lastHoveredObj: Spatial = null
 var selectedObj: Spatial = null
 
-var ghost: Spatial
+onready var ghostStc: Spatial = $Ghosts/Pump
+onready var ghostPipe: Spatial = $Ghosts/Pipe
 
 
 # Called when the node enters the scene tree for the first time.
@@ -41,8 +42,6 @@ func _ready():
 
 	$EffectRadius.scale = 2 * Vector3(EFFECT_RADIUS, 1, EFFECT_RADIUS)
 	$BuildRadius.scale = 2 * Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
-
-	ghost = $Ghosts/Pump
 
 
 func _process(dt: float):
@@ -83,8 +82,8 @@ func handleMouseInteraction():
 		# Just hovering (or clicked + hovered)
 		updateHovered(hovered)
 
-		# Hide ghost
-		ghost.visible = false
+		# Hide ghosts
+		hideGhosts()
 
 	# Hovering outside	
 	else:
@@ -111,13 +110,10 @@ func handleMouseInteraction():
 
 		# Drag ghost
 		if groundPosInRange != null:
-			ghost.visible = true
-			ghost.translation = groundPosInRange
-			updatePipe(selectedObj.translation, groundPosInRange)
+			showGhosts(selectedObj.translation, groundPosInRange)
 
 		else:
-			ghost.visible = false
-			updatePipe(null, null)
+			hideGhosts()
 
 
 func updateSelected(obj) -> void:
@@ -144,25 +140,29 @@ func updateHovered(obj) -> void:
 			node.applyMaterial(matAffected)
 
 
-func updatePipe(from, to) -> void:
-	var pipe = $Ghosts/Pipe
-	if from == null:
-		pipe.visible = false
-		return
+func hideGhosts() -> void:
+	ghostStc.visible = false
+	ghostPipe.visible = false
 
-	pipe.visible = true
+
+# from: selected pos
+# to:  pos of new building
+func showGhosts(from: Vector3, to: Vector3) -> void:
+	ghostStc.visible = true
+	ghostStc.translation = to
+
+	ghostPipe.visible = true
 
 	var structureWidth = 0.2
 	var dist = from.distance_to(to) - structureWidth
 
-	#pipe.transform = Transform().translated(-from).scaled(Vector3(1, 1, dist)).translated(from)
-	pipe.transform = Transform() \
+	ghostPipe.transform = Transform() \
 		.translated(from) \
 		.scaled(Vector3(1, 1, 0.5 * dist)) \
 		.translated(-from)
 
-	pipe.transform.origin = from
-	pipe.look_at(to, Vector3.UP)
+	ghostPipe.transform.origin = from
+	ghostPipe.look_at(to, Vector3.UP)
 
 
 # Returns object hit by mouse, or null if on ground
