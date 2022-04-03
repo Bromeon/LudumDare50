@@ -20,7 +20,7 @@ pub struct Structure {
 	powered: bool,
 }
 
-pub const IRRIGATION_CLEAN_RADIUS : f32 = 8.0;
+pub const IRRIGATION_CLEAN_RADIUS: f32 = 8.0;
 
 impl Structure {
 	pub fn new(ty: StructureType, position: Vector2, id: i64, health: f32) -> Structure {

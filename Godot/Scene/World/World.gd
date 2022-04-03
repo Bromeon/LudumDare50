@@ -128,9 +128,11 @@ func raycast():
 			$BuildRadius.visible = false
 			selectedObj = null
 
+		# Place building
 		elif Input.is_action_just_pressed("right_click"):
 			if inBuildRadius:
-				$SpatialApi.add_structure(groundPos, "Pump")
+				var id = $SpatialApi.add_structure(groundPos, "Pump")
+				selectedObj = instance_from_id(id)
 
 		# Drag ghost
 		if inBuildRadius:
