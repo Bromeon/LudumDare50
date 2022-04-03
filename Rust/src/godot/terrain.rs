@@ -139,4 +139,3 @@ impl Terrain {
 		(normalized + self.measurements.top_left) * self.measurements.plane_size
 	}
 }
-
