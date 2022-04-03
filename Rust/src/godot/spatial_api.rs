@@ -46,9 +46,16 @@ impl SpatialApi {
 
 			instanced.set_translation(pos.to_3d());
 			instanced.set_scale(0.2 * Vector3::ONE);
-			base.get_node("Structures").unwrap().add_child(instanced, false);
+			base.get_node("Structures")
+				.unwrap()
+				.add_child(instanced, false);
 
-			structures.push(Structure::new(StructureType::Irrigation, pos, id, STRUCTURE_HEALTH));
+			structures.push(Structure::new(
+				StructureType::Irrigation,
+				pos,
+				id,
+				STRUCTURE_HEALTH,
+			));
 		}
 
 		godot_print!("Bulk-add {} structures", structures.len());

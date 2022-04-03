@@ -12,10 +12,12 @@ pub enum StructureType {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Structure {ty:StructureType,
+pub struct Structure {
+	ty: StructureType,
 	position: Vector2,
 	id: i64,
 	health: f32,
+	powered: bool,
 }
 
 impl Structure {
@@ -25,22 +27,30 @@ impl Structure {
 			position,
 			id,
 			health,
+			powered: true,
 		}
 	}
 
+	// Setters
+	pub fn deal_damage(&mut self, damage: f32) {
+		self.health -= damage;
+	}
+	pub fn set_powered(&mut self, powered: bool) {
+		self.powered = powered;
+	}
+
+	// Getters
 	pub fn instance_id(&self) -> i64 {
 		self.id
 	}
 	pub fn position(&self) -> Vector2 {
 		self.position
 	}
-
-	pub fn deal_damage(&mut self, damage: f32) {
-		self.health -= damage;
-	}
-
 	pub fn is_alive(&self) -> bool {
 		self.health > 0.0
+	}
+	pub fn is_powered(&self) -> bool {
+		self.powered
 	}
 }
 
