@@ -1,8 +1,9 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/SpatialApi.gdns" type="Script" id=2]
 [ext_resource path="res://Native/Terrain.gdns" type="Script" id=3]
+[ext_resource path="res://Scene/Objects/Zeppelin.tscn" type="PackedScene" id=4]
 [ext_resource path="res://Textures/Blight/Ground_Dirt_009_BaseColor.jpg" type="Texture" id=5]
 [ext_resource path="res://Environment/Environment.tres" type="Environment" id=6]
 [ext_resource path="res://Textures/Grass/Stylized_Grass_003_basecolor.jpg" type="Texture" id=7]
@@ -29,6 +30,7 @@ void fragment() {
     vec4 grass = texture(Grass, UV.xy * Grass_Scale);
     vec4 blight = texture(Blight, UV.xy * Blight_Scale);
 	ALBEDO = mix(grass, blight, splat.r).xyz;
+    ALBEDO = grass.rgb;
 }
 
 void light() {
@@ -69,7 +71,8 @@ transform = Transform( 1, 0, 0, 0, 0.355792, 0.934565, 0, -0.934565, 0.355792, 0
 environment = ExtResource( 6 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.662476, 0.749083, 0, -0.749083, 0.662476, -1.19209e-07, 2.02321, 2.31921 )
+transform = Transform( 1, 0, 0, 0, 0.0048345, 0.999988, 0, -0.999988, 0.0048345, -1.19209e-07, 6.25293, 2.31921 )
+shadow_enabled = true
 
 [node name="Terrain" type="Spatial" parent="."]
 script = ExtResource( 3 )
@@ -87,3 +90,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.051, 0 )
 mesh = SubResource( 1 )
 skeleton = NodePath("../SpatialApi")
 material/0 = null
+
+[node name="Zeppelin" parent="." instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.97746, 0 )

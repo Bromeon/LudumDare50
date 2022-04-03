@@ -20,10 +20,6 @@ material/0 = null
 
 [node name="Spatial" parent="." instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.949384, 0 )
-drag = 0.99
-acc_factor = 1.0
-cam_acc_factor = 3.0
-cam_angle = Vector3( 0, -3.5, -2 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource( 2 )
@@ -32,5 +28,5 @@ environment = ExtResource( 2 )
 transform = Transform( 0.920689, -0.198343, -0.336143, 0.390297, 0.46788, 0.792941, 0, -0.861248, 0.508185, 0, 0, 0 )
 shadow_enabled = true
 
-[node name="ZeppelinCamera" type="Camera" parent="."]
+[node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.641128, 0.767434, 0, -0.767434, 0.641128, 0, 3.32652, 2.28645 )

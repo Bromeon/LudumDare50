@@ -6,7 +6,7 @@ use crate::{get_node, Vector2Ext};
 #[inherit(Spatial)]
 pub struct Zeppelin {
 	/// The camera that will follow this zeppelin. It's stored as a sibling node
-	/// called 'ZeppelinCamera'
+	/// called 'Camera'
 	pub camera: Option<Ref<Camera>>,
 	/// An extra spatial node so we can rotate the zeppelin mesh, consisting of
 	/// multiple meshes, independently.
@@ -14,13 +14,9 @@ pub struct Zeppelin {
 	pub acceleration: Vector2,
 	pub velocity: Vector2,
 	pub look_dir: Vector2,
-	#[property]
 	pub drag: f32,
-	#[property]
 	pub acc_factor: f32,
-	#[property]
 	pub cam_acc_factor: f32,
-	#[property]
 	pub cam_angle: Vector3,
 }
 
@@ -33,7 +29,7 @@ impl Zeppelin {
 			acceleration: Vector2::ZERO,
 			velocity: Vector2::ZERO,
 			look_dir: Vector2::ZERO,
-			drag: 0.95,
+			drag: 0.99,
 			acc_factor: 1.0,
 			cam_angle: Vector3::new(0.0, -7.0, -4.0),
 			cam_acc_factor: 3.0,
@@ -42,7 +38,7 @@ impl Zeppelin {
 
 	#[export]
 	fn _ready(&mut self, base: &Spatial) {
-		self.camera = Some(get_node!(base, "../ZeppelinCamera", Camera));
+		self.camera = Some(get_node!(base, "../Camera", Camera));
 		self.pivot = Some(get_node!(base, "Pivot", Spatial));
 	}
 
@@ -53,7 +49,15 @@ impl Zeppelin {
 		let x =
 			input.get_action_strength("right", false) - input.get_action_strength("left", false);
 
-		self.acceleration = Vector2::new(x as f32, y as f32) * self.acc_factor;
+		fn normalize_or_zero(v: Vector2) -> Vector2 {
+			if v.length_squared() > 0.0 {
+				v.normalized()
+			} else {
+				v
+			}
+		}
+
+		self.acceleration = normalize_or_zero(Vector2::new(x as f32, y as f32)) * self.acc_factor;
 	}
 
 	fn update_camera(&mut self, base: &Spatial, dt: f32) {
