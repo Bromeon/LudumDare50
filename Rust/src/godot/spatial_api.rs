@@ -208,12 +208,13 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn add_structure(&mut self, base: &Spatial, pos: Vector3, ty_name: String) {
+	fn add_structure(&mut self, base: &Spatial, pos: Vector3, ty_name: String) -> i64 {
 		let stc = self.instance_structure(base, pos.to_2d(), &ty_name);
 		godot_print!("Add structure {:?}", stc);
 
 		//self.structures_by_id.insert(id, stc);
 		self.rtree.insert(stc);
+		stc.instance_id()
 	}
 
 	#[export]

@@ -14,7 +14,7 @@ var matHighlighted: SpatialMaterial
 var matSelected: SpatialMaterial
 var matAffected: SpatialMaterial
 
-var lastHighlightedObj: Spatial = null
+var lastHoveredObj: Spatial = null
 var selectedObj: Spatial = null
 
 var ghost: Spatial
@@ -43,7 +43,7 @@ func _ready():
 	$BuildRadius.scale = 2 * Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
 
 	ghost = $Ghosts/Pump
-	
+
 
 func _process(dt: float):
 	# Escape
@@ -54,55 +54,34 @@ func _process(dt: float):
 	$SpatialApi.update_blight_impact(dt)
 	$HUD.set_ore_amount($SpatialApi.get_ore_amount())
 
-	raycast()
+	handleMouseInteraction()
 
 
-func updateHovered() -> void:
-	pass
+func handleMouseInteraction():
+	# Invalidate deleted
+	if lastHoveredObj != null && !is_instance_valid(lastHoveredObj):
+		lastHoveredObj = null
+	if selectedObj != null && !is_instance_valid(selectedObj):
+		selectedObj = null
 
-
-func raycast():
-	var localMousePos = get_viewport().get_mouse_position()
-
-	var spaceRid = get_world().space
-	var spaceState = PhysicsServer.space_get_direct_state(spaceRid)
-
-	var camera: Camera = get_node("/root/World/Camera")
-	var origin = camera.project_ray_origin(localMousePos)
-	var normal = camera.project_ray_normal(localMousePos)
-
-	var result = spaceState.intersect_ray(origin, origin + normal * RAY_LENGTH)
-	#print(result)
-
+	# Reset default materials
 	for node in $SpatialApi/Structures.get_children():
 		if node != selectedObj:
 			node.applyMaterial(matDefault)
 
-	var collider = result.get("collider")
+	# See if mouse hits something
+	var localMousePos = get_viewport().get_mouse_position()
+	var collider = raycastMouseObject(localMousePos)
+
 	if collider is StaticBody:
 		var hovered: Spatial = collider.get_parent()
 
 		# Left click selected
 		if Input.is_action_just_pressed("left_click"):
-			hovered.applyMaterial(matSelected)
-			selectedObj = hovered
-			$BuildRadius.translation = lastHighlightedObj.translation
-			$BuildRadius.visible = true
+			updateSelected(hovered)
 
-		# Just hovering
-		lastHighlightedObj = hovered
-		if hovered != selectedObj:
-			hovered.applyMaterial(matHighlighted)
-
-		$EffectRadius.translation = lastHighlightedObj.translation
-		$EffectRadius.visible = true
-
-		# Mark affected buildings (in effect radius)
-		var affectedIds = $SpatialApi.query_radius(hovered.global_transform.origin, EFFECT_RADIUS)
-		for id in affectedIds:
-			var node = instance_from_id(id)
-			if node != hovered && node != selectedObj:
-				node.applyMaterial(matAffected)
+		# Just hovering (or clicked + hovered)
+		updateHovered(hovered)
 
 		# Hide ghost
 		ghost.visible = false
@@ -111,31 +90,70 @@ func raycast():
 	else:
 		$EffectRadius.visible = false
 
-		var inBuildRadius: bool = false
-		var groundPos = null
+		var groundPosInRange = null
 		if selectedObj:
-			groundPos = projectMousePos(localMousePos)
-			inBuildRadius = groundPos.distance_squared_to(selectedObj.translation) < BUILD_RADIUS * BUILD_RADIUS
+			var groundPos = raycastMouseGround(localMousePos)
+			if groundPos.distance_squared_to(selectedObj.translation) < BUILD_RADIUS * BUILD_RADIUS:
+				groundPosInRange = groundPos
 
 		# De-selected (click on ground)
 		if Input.is_action_just_pressed("left_click"):
 			$BuildRadius.visible = false
 			selectedObj = null
 
+		# Place building
 		elif Input.is_action_just_pressed("right_click"):
-			if inBuildRadius:
-				$SpatialApi.add_structure(groundPos, "Pump")
+			if groundPosInRange != null:
+				var id = $SpatialApi.add_structure(groundPosInRange, "Pump")
+				updateSelected(instance_from_id(id))
 
 		# Drag ghost
-		if inBuildRadius:
+		if groundPosInRange != null:
 			ghost.visible = true
-			ghost.translation = groundPos
+			ghost.translation = groundPosInRange
 		else:
 			ghost.visible = false
 
-			
+
+func updateSelected(obj) -> void:
+	obj.applyMaterial(matSelected)
+	selectedObj = obj
+
+	$BuildRadius.translation = obj.translation
+	$BuildRadius.visible = true
+
+	
+func updateHovered(obj) -> void:
+	if obj != selectedObj:
+		obj.applyMaterial(matHighlighted)
+	lastHoveredObj = obj
+
+	$EffectRadius.translation = obj.translation
+	$EffectRadius.visible = true
+
+	# Mark affected buildings (in effect radius)
+	var affectedIds = $SpatialApi.query_radius(obj.translation, EFFECT_RADIUS)
+	for id in affectedIds:
+		var node = instance_from_id(id)
+		if node != obj && node != selectedObj:
+			node.applyMaterial(matAffected)
+
+
+# Returns object hit by mouse, or null if on ground
+func raycastMouseObject(localMousePos: Vector2):
+	var spaceRid = get_world().space
+	var spaceState = PhysicsServer.space_get_direct_state(spaceRid)
+
+	var camera: Camera = get_node("/root/World/Camera")
+	var origin = camera.project_ray_origin(localMousePos)
+	var normal = camera.project_ray_normal(localMousePos)
+
+	var result = spaceState.intersect_ray(origin, origin + normal * RAY_LENGTH)
+	return result.get("collider")
+
+
 # Mouse position projected onto XY plane (z=0)
-func projectMousePos(localMousePos: Vector2) -> Vector3:
+func raycastMouseGround(localMousePos: Vector2) -> Vector3:
 	#var mousePos = get_viewport().get_mouse_position()
 	var origin = $Camera.project_ray_origin(localMousePos)
 	var normal = $Camera.project_ray_normal(localMousePos)
