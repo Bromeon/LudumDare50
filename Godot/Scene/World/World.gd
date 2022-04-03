@@ -108,20 +108,26 @@ func raycast():
 			$BuildRadius.visible = false
 			selectedObj = null
 
+		if Input.is_action_just_pressed("right_click"):
+			if selectedObj:
+				var groundPos = projectMousePos(localMousePos)
+				if groundPos.distance_squared_to(selectedObj.translation) < BUILD_RADIUS * BUILD_RADIUS:
+					$SpatialApi.add_structure(groundPos, "Pump")
 
+			
 # Mouse position projected onto XY plane (z=0)
 func projectMousePos(localMousePos: Vector2) -> Vector3:
 	#var mousePos = get_viewport().get_mouse_position()
 	var origin = $Camera.project_ray_origin(localMousePos)
 	var normal = $Camera.project_ray_normal(localMousePos)
-	var z = 0
+	var y = 0
 
 	#var spaceState = get_world().direct_space_state
-	var projection = Plane(Vector3.BACK, z).intersects_ray(origin, normal)
+	var projection = Plane(Vector3.UP, y).intersects_ray(origin, normal)
 
 	# Note: due to rounding errors, z coordinate of projection can be -0.00004, so floor() makes it -1
 	# Thus, manually set it to desired coordinate
-	projection.z = z
+	projection.y = y
 
 	#print("Projected: ", projection)
 	return projection

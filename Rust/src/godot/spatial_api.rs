@@ -17,6 +17,8 @@ pub struct SpatialApi {
 	rtree: RTree<Structure>,
 
 	terrain: Option<Instance<Terrain>>,
+
+	stc_scenes: Dictionary,
 }
 
 #[methods]
@@ -28,45 +30,56 @@ impl SpatialApi {
 			//structures_by_id: HashMap::new(),
 			rtree: RTree::new(),
 			terrain: None,
+			stc_scenes: Dictionary::new_shared(),
 		}
 	}
 
 	#[export]
 	fn load(&mut self, base: &Spatial, scenes: Dictionary) {
+		self.stc_scenes = scenes;
+
 		let mut structures = vec![];
 
 		let variants = ["Water", "Ore", "Pump", "Irrigation"];
 		for pos in random_positions(20) {
-			let v = variants.into_iter().choose(&mut thread_rng()).unwrap();
-			let scene = scenes.get(v).unwrap().to_object::<PackedScene>().unwrap();
-			let instanced = scene.instance(0).unwrap();
-			let instanced = instanced.cast::<Spatial>();
-			let id = instanced.get_instance_id();
+			let ty_name = variants.into_iter().choose(&mut thread_rng()).unwrap();
+			let stc = self.instance_structure(base, pos, ty_name);
 
-			instanced.set_translation(pos.to_3d());
-			instanced.set_scale(0.2 * Vector3::ONE);
-			base.get_node("Structures")
-				.unwrap()
-				.add_child(instanced, false);
-
-			structures.push(Structure::new(
-				match v {
-					"Water" => StructureType::Water,
-					"Ore" => StructureType::Ore,
-					"Pump" => StructureType::Pump,
-					"Irrigation" => StructureType::Irrigation,
-					_ => unreachable!(),
-				},
-				pos,
-				id,
-				STRUCTURE_HEALTH,
-			));
+			structures.push(stc);
 		}
 
 		godot_print!("Bulk-add {} structures", structures.len());
 		self.rtree = RTree::bulk_load(structures);
-
 		self.terrain = Some(base.get_node_as_instance::<Terrain>("../Terrain").claim());
+	}
+
+	fn instance_structure(&self, base: &Spatial, pos: Vector2, ty_name: &str) -> Structure {
+		let scene = self
+			.stc_scenes
+			.get(ty_name)
+			.unwrap()
+			.to_object::<PackedScene>()
+			.unwrap();
+		let instanced = scene.instance(0).unwrap();
+		let instanced = instanced.cast::<Spatial>();
+		let id = instanced.get_instance_id();
+
+		instanced.set_translation(pos.to_3d());
+		instanced.set_scale(0.2 * Vector3::ONE);
+		base.get_node("Structures")
+			.unwrap()
+			.add_child(instanced, false);
+
+		let ty = match ty_name {
+			"Water" => StructureType::Water,
+			"Ore" => StructureType::Ore,
+			"Pump" => StructureType::Pump,
+			"Irrigation" => StructureType::Irrigation,
+			_ => unreachable!(),
+		};
+
+		let stc = Structure::new(ty, pos, id, STRUCTURE_HEALTH);
+		stc
 	}
 
 	#[export]
@@ -88,8 +101,8 @@ impl SpatialApi {
 			if stc.is_powered() {
 				terrain.clean_circle(stc.position().to_3d(), stc.clean_radius());
 			} else if stc.takes_damage() {
-				let blight =
-					terrain.get_average_blight_in_circle(stc.position().to_3d(), stc.damage_radius());
+				let blight = terrain
+					.get_average_blight_in_circle(stc.position().to_3d(), stc.damage_radius());
 
 				let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
 				stc.deal_damage(damage);
@@ -134,8 +147,10 @@ impl SpatialApi {
 			.collect()
 	}
 
-	#[allow(dead_code)]
-	fn add_structure(&mut self, stc: Structure) {
+	#[export]
+	fn add_structure(&mut self, base: &Spatial, pos: Vector3, ty_name: String) {
+
+		let stc = self.instance_structure(base, pos.to_2d(), &ty_name);
 		godot_print!("Add structure {:?}", stc);
 
 		//self.structures_by_id.insert(id, stc);

@@ -49,13 +49,13 @@ impl Structure {
 	pub fn damage_radius(&self) -> f32 {
 		match self.ty {
 			StructureType::Water => 0.0, // Doesn't take damage
-			StructureType::Ore => 0.0, // Doesn't take damage
+			StructureType::Ore => 0.0,   // Doesn't take damage
 			StructureType::Pump => 1.0,
 			StructureType::Irrigation => 1.5,
 		}
 	}
 
-	// When this building is powered, the 
+	// When this building is powered, the
 	pub fn clean_radius(&self) -> f32 {
 		match self.ty {
 			StructureType::Water => 5.0,
