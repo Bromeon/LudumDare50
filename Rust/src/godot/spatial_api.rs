@@ -65,7 +65,9 @@ impl SpatialApi {
 		});
 	}
 
+	#[allow(unreachable_code)]
 	fn update_blight_impl(rtree: &mut RTree<Structure>, dt: f32, terrain: &Terrain) {
+		return;
 		let mut to_remove = vec![];
 
 		for stc in rtree.iter_mut() {
