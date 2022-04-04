@@ -85,14 +85,15 @@ impl SpatialApi {
 		Structure::new(ty, pos, id, STRUCTURE_HEALTH)
 	}
 
-	fn instance_pipe(&self, base: &Spatial, from: Vector3, to: Vector3) {
-		let (pipe, _id) = self.instance_scene("Pipe");
+	fn instance_pipe(&self, base: &Spatial, from: Vector3, to: Vector3) -> i64 {
+		let (pipe, id) = self.instance_scene("Pipe");
 
 		// Important: add to tree first!
 		base.get_node("Pipes").unwrap().add_child(pipe, false);
 
 		let world = base.get_parent().unwrap();
 		world.call("alignPipe", &v![pipe, from, to]);
+		id
 	}
 
 	fn instance_scene(&self, scene_key: &str) -> (Ref<Spatial>, i64) {
@@ -193,13 +194,18 @@ impl SpatialApi {
 
 			let mut i = 0;
 			while i < pipes.len() {
-				let pipe = &pipes[i];
-				if pipe.start_id() == node_id || pipe.end_id() == node_id {
+				let pipe = pipes[i].clone();
+				if pipe.start_node_id() == node_id || pipe.end_node_id() == node_id {
 					pipes.swap_remove(i);
+					removed_pipe_ids.push(pipe.pipe_node_id());
 				} else {
 					i += 1;
 				}
 			}
+		}
+
+		if !removed_pipe_ids.is_empty() {
+			godot_print!("Removed pipe IDs: {:?}", removed_pipe_ids);
 		}
 
 		BlightUpdateResult {
@@ -260,11 +266,11 @@ impl SpatialApi {
 		godot_print!("Add structure {:?}", stc);
 
 		if let Some(from) = pipe_from_obj {
+			let pipe_id = self.instance_pipe(base, from.translation(), pos);
 			let from_id = from.get_instance_id();
 			let to_id = stc.instance_id();
 
-			self.pipes.push(Pipe::new(from_id, to_id));
-			self.instance_pipe(base, from.translation(), pos);
+			self.pipes.push(Pipe::new(pipe_id, from_id, to_id));
 		}
 
 		//self.structures_by_id.insert(id, stc);

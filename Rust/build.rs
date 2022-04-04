@@ -33,6 +33,7 @@ fn main() {
 			class!(Zeppelin: Spatial),
 			//
 			// Data classes
+			class!(AddStructure),
 			class!(BlightUpdateResult),
 		],
 	};
