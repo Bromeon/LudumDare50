@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Scene/Objects/Structure.gd" type="Script" id=1]
+[ext_resource path="res://Scene/Objects/Pump2.tscn" type="PackedScene" id=2]
 
 [sub_resource type="CylinderMesh" id=1]
 bottom_radius = 2.0
@@ -18,9 +19,13 @@ script = ExtResource( 1 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0 )
 
 [node name="Mesh" type="MeshInstance" parent="Core"]
+visible = false
 mesh = SubResource( 1 )
 skeleton = NodePath("../..")
 material/0 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="Core"]
 shape = SubResource( 2 )
+
+[node name="pump" parent="Core" instance=ExtResource( 2 )]
+transform = Transform( -6.55671e-08, 0, -1.5, 0, 1.5, 0, 1.5, 0, -6.55671e-08, 0, -1.49732, 0 )

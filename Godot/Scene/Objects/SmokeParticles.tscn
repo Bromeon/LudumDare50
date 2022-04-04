@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://Textures/Smoke.png" type="Texture" id=1]
+
+[sub_resource type="SpatialMaterial" id=4]
+flags_transparent = true
+vertex_color_use_as_albedo = true
+params_blend_mode = 1
+params_billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+albedo_color = Color( 0.254902, 0.254902, 0.254902, 1 )
+albedo_texture = ExtResource( 1 )
+
+[sub_resource type="Gradient" id=5]
+offsets = PoolRealArray( 0.677019, 1 )
+colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 0 )
+
+[sub_resource type="GradientTexture" id=3]
+gradient = SubResource( 5 )
+
+[sub_resource type="ParticlesMaterial" id=6]
+direction = Vector3( 0, 1, 0 )
+spread = 20.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 1.0
+initial_velocity_random = 0.5
+color_ramp = SubResource( 3 )
+
+[sub_resource type="QuadMesh" id=7]
+
+[node name="Smoke" type="Spatial"]
+
+[node name="Particles" type="Particles" parent="."]
+material_override = SubResource( 4 )
+amount = 20
+lifetime = 2.0
+randomness = 0.5
+process_material = SubResource( 6 )
+draw_pass_1 = SubResource( 7 )

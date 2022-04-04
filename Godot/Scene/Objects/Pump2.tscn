@@ -1,0 +1,77 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://Models/pump.glb" type="PackedScene" id=1]
+[ext_resource path="res://Textures/Matcaps/Copper.png" type="Texture" id=2]
+[ext_resource path="res://Assets/Shader/Matcap.gdshader" type="Shader" id=3]
+[ext_resource path="res://Textures/Grunge.png" type="Texture" id=4]
+[ext_resource path="res://Scene/Objects/Pump2.gd" type="Script" id=5]
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = ExtResource( 3 )
+shader_param/tint = Color( 0.85098, 0.639216, 0.411765, 1 )
+shader_param/grunge_scale = 0.545
+shader_param/grunge_amount = 0.863
+shader_param/Matcap = ExtResource( 2 )
+shader_param/Grunge = ExtResource( 4 )
+
+[sub_resource type="ShaderMaterial" id=3]
+shader = ExtResource( 3 )
+shader_param/tint = Color( 1, 1, 1, 1 )
+shader_param/grunge_scale = 3.457
+shader_param/grunge_amount = 0.728
+shader_param/Matcap = ExtResource( 2 )
+shader_param/Grunge = ExtResource( 4 )
+
+[sub_resource type="Animation" id=4]
+resource_name = "Pump"
+length = 0.6
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Cube001:translation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.3, 0.6 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector3( 0, 1, 0 ), Vector3( 0, 0.497439, 0 ), Vector3( 0, 1, 0 ) ]
+}
+
+[sub_resource type="Animation" id=5]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("Cube001:translation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector3( 0, 1, 0 ) ]
+}
+
+[node name="pump" instance=ExtResource( 1 )]
+script = ExtResource( 5 )
+
+[node name="Cube" parent="." index="0"]
+material/0 = SubResource( 2 )
+
+[node name="Cube001" parent="." index="1"]
+material/0 = SubResource( 3 )
+
+[node name="Cube002" parent="." index="2"]
+material/0 = SubResource( 3 )
+
+[node name="Cube004" parent="." index="3"]
+material/0 = SubResource( 3 )
+
+[node name="Cylinder" parent="." index="4"]
+material/0 = SubResource( 3 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." index="5"]
+anims/Pump = SubResource( 4 )
+anims/RESET = SubResource( 5 )

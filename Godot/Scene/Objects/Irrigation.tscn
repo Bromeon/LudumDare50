@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Scene/Objects/Structure.gd" type="Script" id=1]
+[ext_resource path="res://Scene/Objects/Irrigation2.tscn" type="PackedScene" id=2]
 
 [sub_resource type="BoxShape" id=3]
 
@@ -22,6 +23,7 @@ transform = Transform( 1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 1.5, 0 )
 shape = SubResource( 3 )
 
 [node name="Mesh" type="MeshInstance" parent="Core"]
+visible = false
 mesh = SubResource( 2 )
 skeleton = NodePath("../..")
 material/0 = null
@@ -33,6 +35,10 @@ transform = Transform( 1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 4.5, 0 )
 shape = SubResource( 4 )
 
 [node name="Mesh" type="MeshInstance" parent="Roof"]
+visible = false
 mesh = SubResource( 1 )
 skeleton = NodePath("../..")
 material/0 = null
+
+[node name="Irrigation" parent="." instance=ExtResource( 2 )]
+transform = Transform( -8.74228e-08, 0, -2, 0, 2, 0, 2, 0, -8.74228e-08, 0, -0.526192, 0 )
