@@ -1,7 +1,7 @@
 use gdnative::prelude::*;
 use rand::prelude::*;
 use rstar::{RTree, AABB};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 //use std::collections::HashMap;
 
 use crate::godot::{AddStructure, BlightUpdateResult, QueryResult, Terrain};
@@ -270,6 +270,88 @@ impl SpatialApi {
 			.filter(|stc| stc.position().distance_squared_to(center) < radius_sq)
 			.map(|stc| stc.instance_id())
 			.collect()
+	}
+
+	fn update_pipe_network(&mut self) {
+		// First, find all water spots connected to pipes
+		let mut visited = HashSet::<i64>::new();
+
+		let mut powered_structures = HashSet::<i64>::new();
+		for pipe in self.pipes.iter() {
+			let start_id = pipe.start_node_id();
+			let start_stc = *self.structures_by_id.get(&start_id).unwrap();
+			if start_stc.ty() == StructureType::Water {
+				powered_structures.insert(start_id);
+			}
+
+			let end_id = pipe.end_node_id();
+			let end_stc = *self.structures_by_id.get(&end_id).unwrap();
+			if end_stc.ty() == StructureType::Water {
+				powered_structures.insert(end_id);
+			}
+		}
+
+		let initial = powered_structures.clone();
+		for root_id in initial {
+			Self::recurse_pipes(
+				root_id,
+				&self.pipes,
+				&self.structures_by_id,
+				&mut powered_structures,
+				&mut visited,
+			);
+		}
+	}
+
+	fn recurse_pipes(
+		node_id: i64,
+		pipes: &Vec<Pipe>,
+		structures_by_id: &HashMap<i64, Structure>,
+		powered_structures: &mut HashSet<i64>,
+		visited: &mut HashSet<i64>,
+	) {
+		if visited.contains(&node_id) {
+			return;
+		}
+		visited.insert(node_id);
+
+		let stc = structures_by_id.get(&node_id).unwrap();
+		if stc.can_be_powered() {
+			println!("   Power {node_id}!");
+			powered_structures.insert(node_id);
+		}
+
+		for adjacent_id in Self::get_pipe_connections(node_id, pipes, visited) {
+			println!("Explore {node_id} -> {adjacent_id}...");
+			Self::recurse_pipes(
+				adjacent_id,
+				pipes,
+				structures_by_id,
+				powered_structures,
+				visited,
+			);
+		}
+	}
+
+	fn get_pipe_connections(node_id: i64, pipes: &Vec<Pipe>, except: &HashSet<i64>) -> Vec<i64> {
+		// Slow, whatever
+		let mut result = vec![];
+		for pipe in pipes {
+			let start_id = pipe.start_node_id();
+			let end_id = pipe.end_node_id();
+
+			if start_id == node_id {
+				if !except.contains(&end_id) {
+					result.push(end_id);
+				}
+			} else if end_id == node_id {
+				if !except.contains(&start_id) {
+					result.push(start_id);
+				}
+			}
+		}
+
+		result
 	}
 
 	#[export]

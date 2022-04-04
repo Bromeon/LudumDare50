@@ -29,7 +29,7 @@ impl Structure {
 			position,
 			id,
 			health,
-			powered: Self::can_be_powered(ty),
+			powered: Self::initially_powered(ty),
 		}
 	}
 
@@ -60,7 +60,7 @@ impl Structure {
 	}
 
 	pub fn set_powered(&mut self, powered: bool) {
-		assert!(Self::can_be_powered(self.ty));
+		assert!(self.can_be_powered());
 		self.powered = powered;
 	}
 
@@ -80,8 +80,15 @@ impl Structure {
 	pub fn is_powered(&self) -> bool {
 		self.powered
 	}
-
-	fn can_be_powered(ty: StructureType) -> bool {
+	pub fn can_be_powered(&self) -> bool {
+		match self.ty {
+			StructureType::Water => false, // not toggleable
+			StructureType::Ore => false,
+			StructureType::Pump => true,
+			StructureType::Irrigation => true,
+		}
+	}
+	fn initially_powered(ty: StructureType) -> bool {
 		match ty {
 			StructureType::Water => true,
 			StructureType::Ore => false,
@@ -89,6 +96,7 @@ impl Structure {
 			StructureType::Irrigation => false,
 		}
 	}
+
 }
 
 impl RTreeObject for Structure {

@@ -7,6 +7,8 @@ pub struct Pipe {
 
 impl Pipe {
 	pub fn new(pipe_id: i64, start_id: i64, end_id: i64) -> Self {
+		assert_ne!(start_id, pipe_id);
+		assert_ne!(start_id, end_id);
 		Self {
 			pipe_id,
 			// canonical order
