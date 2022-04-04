@@ -14,13 +14,16 @@ var num: int
 
 func init(number: int):
 	num = number
+
+	var prefix = ""
 	if num >= 0:
 		usedColor = positiveColor
+		prefix = "+"
 	else:
 		usedColor = negativeColor
 
 	print("children: ", get_children())
-	$Text.text = str(num)
+	$Text.text = str(prefix, num)
 	$Text.textColor = usedColor
 
 
@@ -37,5 +40,5 @@ func _process(delta):
 
 	usedColor.a = remainingLife / LIFETIME
 	$Text.textColor = usedColor
-	
+
 	self.translate(Vector3.UP * delta * SPEED)

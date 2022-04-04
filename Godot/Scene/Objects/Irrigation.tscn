@@ -1,7 +1,6 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Scene/Objects/Structure.gd" type="Script" id=1]
-[ext_resource path="res://Scene/Util/Text2D.tscn" type="PackedScene" id=2]
 
 [sub_resource type="BoxShape" id=3]
 
@@ -37,7 +36,3 @@ shape = SubResource( 4 )
 mesh = SubResource( 1 )
 skeleton = NodePath("../..")
 material/0 = null
-
-[node name="Text3D" parent="." instance=ExtResource( 2 )]
-text = "I'm not an interrogator"
-textColor = Color( 0.152941, 0.866667, 0.815686, 1 )

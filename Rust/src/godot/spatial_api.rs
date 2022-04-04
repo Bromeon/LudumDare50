@@ -234,10 +234,11 @@ impl SpatialApi {
 				irrigator.clean_radius().unwrap(),
 			);
 
+			let mut mined_in_cycle = 0;
 			for stc in surrounding {
 				if stc.ty() == StructureType::Ore {
 					let mined = stc.mine_amount(ORE_PER_COLLECTION);
-					self.ore_amount += mined;
+					mined_in_cycle += mined;
 
 					animated_positions.push(stc.position());
 					animated_diffs.push(-ORE_PER_COLLECTION);
@@ -245,6 +246,10 @@ impl SpatialApi {
 					ore_fields_remaining_amounts.insert(stc.instance_id(), stc.amount())
 				}
 			}
+
+			self.ore_amount += mined_in_cycle;
+			animated_positions.push(irrigator.position());
+			animated_diffs.push(mined_in_cycle);
 		}
 
 		let result = AmountsUpdated {
