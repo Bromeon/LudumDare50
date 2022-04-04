@@ -146,8 +146,11 @@ func handleMouseInteraction():
 	var localMousePos = get_viewport().get_mouse_position()
 	var collider = raycastMouseObject(localMousePos)
 
+	$SceneUi/Control.rect_position = localMousePos + Vector2(30, -10)
+
 	if collider is StaticBody:
 		var hovered: Spatial = collider.get_parent()
+		updateTooltip(hovered, "Left click: select")
 
 		# Left click selected
 		if Input.is_action_just_pressed("left_click"):
@@ -163,11 +166,18 @@ func handleMouseInteraction():
 	else:
 		$SceneUi/EffectRadius.visible = false
 
+
 		var groundPosInRange = null
 		if selectedObj != null:
+			updateTooltip(null, "Right click: place\nScroll wheel: switch building")
+
 			var groundPos = raycastMouseGround(localMousePos)
 			if groundPos.distance_squared_to(selectedObj.translation) < BUILD_RADIUS * BUILD_RADIUS:
 				groundPosInRange = groundPos
+
+		else:
+			updateTooltip(null, "Left click: select building")
+
 
 		# De-selected (click on ground)
 		if Input.is_action_just_pressed("left_click"):
@@ -285,3 +295,20 @@ func restartGame():
 	var success = get_tree().reload_current_scene()
 	if success != OK:
 		printerr("Error reloading game scene")
+
+
+func hideTooltip() -> void:
+	$SceneUi/Control/Label.text = ""
+
+func updateTooltip(obj, tip = null) -> void:
+	var label = $SceneUi/Control/Label
+	if obj == null:
+		label.text = tip
+
+	elif tip == null:	
+		label.text = $SpatialApi.get_structure_info(obj.get_instance_id(), false)
+	
+	else:
+		var minimalStr = $SpatialApi.get_structure_info(obj.get_instance_id(), true)
+		label.text = str(minimalStr, "\n", tip)
+	

@@ -96,14 +96,7 @@ impl SpatialApi {
 			.unwrap()
 			.add_child(instanced, false);
 
-		let ty = match ty_name {
-			"Water" => StructureType::Water,
-			"Ore" => StructureType::Ore,
-			"Pump" => StructureType::Pump,
-			"Irrigation" => StructureType::Irrigation,
-			_ => unreachable!(),
-		};
-
+		let ty = StructureType::from_name(ty_name);
 		Structure::new(ty, pos, id, STRUCTURE_HEALTH)
 	}
 
@@ -217,7 +210,7 @@ impl SpatialApi {
 	) -> Vec<i64> {
 		// Remove destroyed structures
 		let mut removed_pipe_ids = vec![];
-		for elem in structures_to_remove {
+		for elem in structures_to_remove .iter() {
 			let id_to_remove = elem.instance_id();
 
 			unsafe {
@@ -320,11 +313,7 @@ impl SpatialApi {
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
 		animated_strings: &mut PoolArray<GodotString>,
-<<<<<<< HEAD
-	) -> bool {
-=======
 	) -> WaterResult {
->>>>>>> 439140bc1b2cb8de0420d09db336c1ecaf383af6
 		if (self.frame_count + WATER_TICK_OFFSET) % WATER_TICK_FREQ != 0 {
 			return WaterResult::NothingToDo;
 		}
@@ -677,6 +666,26 @@ impl SpatialApi {
 	#[export]
 	fn consume_ore(&mut self, _base: &Spatial, amt: i32) {
 		self.ore_amount = (self.ore_amount - amt).max(0)
+	}
+
+	#[export]
+	fn get_structure_info(&self, _base: &Spatial, instance_id: i64, minimal: bool) -> String {
+		if let Some(stc) = self.structures_by_id.get(&instance_id) {
+			let mut info = format!("{}", stc.ty_name());
+			if stc.can_be_powered() {
+				if stc.is_powered() {
+					info += " (powered)";
+				}
+			}
+
+			if !minimal {
+				info += stc.ty_description();
+			}
+
+			info
+		} else {
+			"?".to_string()
+		}
 	}
 }
 
