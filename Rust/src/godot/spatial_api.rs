@@ -1,9 +1,10 @@
 use gdnative::prelude::*;
 use rand::prelude::*;
 use rstar::{RTree, AABB};
+use std::collections::{HashMap, HashSet};
 //use std::collections::HashMap;
 
-use crate::godot::{AddStructure, BlightUpdateResult, Terrain};
+use crate::godot::{AddStructure, BlightUpdateResult, QueryResult, Terrain};
 use crate::objects::{Pipe, Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
 use crate::{Vector2Ext, Vector3Ext};
 
@@ -19,8 +20,8 @@ const MINER_TICK_FREQ: usize = 60 * 2;
 #[derive(NativeClass)]
 #[inherit(Spatial)]
 pub struct SpatialApi {
-	//structures_by_id: HashMap<i64, Structure>,
 	rtree: RTree<Structure>,
+	structures_by_id: HashMap<i64, Structure>,
 	pipes: Vec<Pipe>,
 
 	terrain: Option<Instance<Terrain>>,
@@ -36,8 +37,8 @@ impl SpatialApi {
 		godot_print!("Spatials is instantiated.");
 
 		Self {
-			//structures_by_id: HashMap::new(),
 			rtree: RTree::new(),
+			structures_by_id: HashMap::new(),
 			pipes: Vec::new(),
 			terrain: None,
 			scenes: Dictionary::new_shared(),
@@ -58,6 +59,7 @@ impl SpatialApi {
 			let stc = self.instance_structure(base, pos, ty_name);
 
 			structures.push(stc);
+			self.structures_by_id.insert(stc.instance_id(), stc);
 		}
 
 		godot_print!("Bulk-add {} structures", structures.len());
@@ -107,7 +109,7 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn update_blight(&mut self, _base: &Spatial, dt: f32) -> Instance<BlightUpdateResult> {
+	fn update_blight(&mut self, base: &Spatial, dt: f32) -> Instance<BlightUpdateResult> {
 		self.frame_count += 1;
 		let result = if let Some(inst) = self.terrain.as_mut() {
 			let result = inst
@@ -115,6 +117,7 @@ impl SpatialApi {
 					Self::update_blight_impl(
 						&mut self.rtree,
 						&mut self.pipes,
+						&mut self.structures_by_id,
 						dt,
 						terrain,
 						self.frame_count,
@@ -129,6 +132,11 @@ impl SpatialApi {
 			BlightUpdateResult::default()
 		};
 
+		if !result.removed_pipe_ids.is_empty() {
+			let world = base.get_parent().unwrap();
+			self.update_pipe_network(world);
+		}
+
 		Instance::emplace(result).into_shared()
 	}
 
@@ -138,6 +146,7 @@ impl SpatialApi {
 	fn update_blight_impl(
 		rtree: &mut RTree<Structure>,
 		pipes: &mut Vec<Pipe>,
+		structures_by_id: &mut HashMap<i64, Structure>,
 		dt: f32,
 		terrain: &mut Terrain,
 		frame_count: usize,
@@ -149,8 +158,12 @@ impl SpatialApi {
 			profiling::scope!("blight");
 
 			if stc.is_powered() {
-				terrain.clean_circle(stc.position().to_3d(), stc.clean_radius());
-			} else if let Some(damage_radius) = stc.damage_radius() {
+				if let Some(radius) = stc.clean_radius() {
+					terrain.clean_circle(stc.position().to_3d(), radius);
+				}
+			}
+
+			if let Some(damage_radius) = stc.damage_radius() {
 				let blight =
 					terrain.get_average_blight_in_circle(stc.position().to_3d(), damage_radius);
 
@@ -184,6 +197,7 @@ impl SpatialApi {
 		let mut removed_pipe_ids = vec![];
 		for elem in structures_to_remove.iter() {
 			rtree.remove(elem);
+			structures_by_id.remove(&elem.instance_id());
 
 			let node_id = elem.instance_id();
 			let node = unsafe { Node::from_instance_id(node_id) };
@@ -194,7 +208,7 @@ impl SpatialApi {
 
 			let mut i = 0;
 			while i < pipes.len() {
-				let pipe = pipes[i].clone();
+				let pipe = pipes[i];
 				if pipe.start_node_id() == node_id || pipe.end_node_id() == node_id {
 					pipes.swap_remove(i);
 					removed_pipe_ids.push(pipe.pipe_node_id());
@@ -219,7 +233,6 @@ impl SpatialApi {
 		position: Vector2,
 		radius: f32,
 	) -> impl Iterator<Item = Structure> + '_ {
-		//self.structures_by_id.keys().copied().collect()
 		let half_size = Vector2::ONE * radius;
 		let center = position;
 		let p1 = (center - half_size).to_rstar();
@@ -236,8 +249,23 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn query_radius(&self, _base: &Spatial, position3d: Vector3, radius: f32) -> Vec<i64> {
-		//self.structures_by_id.keys().copied().collect()
+	fn query_effect_radius(&self, _base: &Spatial, node: Ref<Spatial>) -> Instance<QueryResult> {
+		// TODO O(n), could be HashMap'ed
+		let stc = self.structures_by_id.get(&node.get_instance_id());
+		let stc = stc.expect("Queried non-structure object, make sure that collision shapes of other objects are disabled");
+
+		// Drawing a circle of radius 0 is OK if there's nothing
+		let radius = stc.clean_radius().unwrap_or(0.0);
+		let affected_ids = self.query_affected_ids(node.translation(), radius);
+
+		let result = QueryResult {
+			radius,
+			affected_ids,
+		};
+		Instance::emplace(result).into_shared()
+	}
+
+	fn query_affected_ids(&self, position3d: Vector3, radius: f32) -> Vec<i64> {
 		let half_size = Vector2::ONE * radius;
 		let center = position3d.to_2d();
 		let p1 = (center - half_size).to_rstar();
@@ -254,6 +282,137 @@ impl SpatialApi {
 			.collect()
 	}
 
+	fn update_pipe_network(&mut self, world: Ref<Node>) {
+		// Note: of course, we could only update from the changed pipes, but this is a more general approach
+		println!("Update pipe network...");
+
+		// First, find all water spots connected to pipes
+		let mut visited_structures = HashSet::<i64>::new();
+		let mut powered_structures = HashSet::<i64>::new();
+		let mut powered_pipes = HashSet::<i64>::new();
+		let mut graph_roots = Vec::new();
+
+		for pipe in self.pipes.iter() {
+			let pipe_id = pipe.pipe_node_id();
+
+			let start_id = pipe.start_node_id();
+			let start_stc = *self.structures_by_id.get(&start_id).unwrap();
+			if start_stc.ty() == StructureType::Water {
+				powered_structures.insert(start_id);
+				powered_pipes.insert(pipe_id);
+				graph_roots.push((pipe_id, start_id));
+			}
+
+			let end_id = pipe.end_node_id();
+			let end_stc = *self.structures_by_id.get(&end_id).unwrap();
+			if end_stc.ty() == StructureType::Water {
+				powered_structures.insert(end_id);
+				powered_pipes.insert(pipe_id);
+				graph_roots.push((pipe_id, end_id));
+			}
+		}
+
+		for (pipe_id, stc_id) in graph_roots {
+			Self::recurse_pipe_graph(
+				pipe_id,
+				stc_id,
+				&self.pipes,
+				&self.structures_by_id,
+				&mut powered_structures,
+				&mut powered_pipes,
+				&mut visited_structures,
+			);
+		}
+
+		// Apply changes to every structure
+		for stc in self.rtree.iter_mut() {
+			let id = stc.instance_id();
+			let powered = powered_structures.contains(&id);
+
+			if !stc.can_be_powered() {
+				continue;
+			}
+
+			// Update in 2 places (keep map and rtree in sync)
+			stc.set_powered(powered);
+			self.structures_by_id
+				.get_mut(&id)
+				.unwrap()
+				.set_powered(powered);
+		}
+
+		for pipe in self.pipes.iter() {
+			let id = pipe.pipe_node_id();
+			let powered = powered_pipes.contains(&id);
+			world.call("setPowered", &v![id, powered]);
+		}
+
+		//println!("Done updating pipe network.\n");
+	}
+
+	fn recurse_pipe_graph(
+		pipe_id: i64,
+		stc_id: i64,
+		pipes: &Vec<Pipe>,
+		structures_by_id: &HashMap<i64, Structure>,
+		powered_structures: &mut HashSet<i64>,
+		powered_pipes: &mut HashSet<i64>,
+		visited_structures: &mut HashSet<i64>,
+	) {
+		if visited_structures.contains(&stc_id) {
+			return;
+		}
+		visited_structures.insert(stc_id);
+
+		let stc = structures_by_id.get(&stc_id).unwrap();
+		if stc.can_be_powered() {
+			//println!("    Power {stc_id}!");
+			powered_pipes.insert(pipe_id);
+			powered_structures.insert(stc_id);
+		}
+
+		for (pipe_id, adjacent_id) in
+			Self::get_pipe_adjacent_pairs(stc_id, pipes, visited_structures)
+		{
+			//println!("  Explore pipe {pipe_id}: connects {stc_id} -> {adjacent_id}...");
+			Self::recurse_pipe_graph(
+				pipe_id,
+				adjacent_id,
+				pipes,
+				structures_by_id,
+				powered_structures,
+				powered_pipes,
+				visited_structures,
+			);
+		}
+	}
+
+	fn get_pipe_adjacent_pairs(
+		node_id: i64,
+		pipes: &Vec<Pipe>,
+		except: &HashSet<i64>,
+	) -> Vec<(i64, i64)> {
+		// Slow, whatever
+		let mut result = vec![];
+		for pipe in pipes {
+			let pipe_id = pipe.pipe_node_id();
+			let start_id = pipe.start_node_id();
+			let end_id = pipe.end_node_id();
+
+			if start_id == node_id {
+				if !except.contains(&end_id) {
+					result.push((pipe_id, end_id));
+				}
+			} else if end_id == node_id {
+				if !except.contains(&start_id) {
+					result.push((pipe_id, start_id));
+				}
+			}
+		}
+
+		result
+	}
+
 	#[export]
 	fn add_structure(&mut self, base: &Spatial, added: Instance<AddStructure>) -> i64 {
 		let added: AddStructure = added.map(|inst, _| inst.clone()).unwrap();
@@ -264,13 +423,18 @@ impl SpatialApi {
 		if let Some(from) = added.pipe_from_obj {
 			let pipe_id = self.instance_pipe(base, from.translation(), added.position);
 			let from_id = from.get_instance_id();
-			let to_id = stc.instance_id();
+			let stc_id = stc.instance_id();
+			let to_id = stc_id;
 
 			self.pipes.push(Pipe::new(pipe_id, from_id, to_id));
 		}
 
-		//self.structures_by_id.insert(id, stc);
+		self.structures_by_id.insert(stc.instance_id(), stc);
 		self.rtree.insert(stc);
+
+		let world = base.get_parent().unwrap();
+		self.update_pipe_network(world);
+
 		stc.instance_id()
 	}
 

@@ -10,6 +10,21 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "",
+"class": "AddStructure",
+"language": "NativeScript",
+"path": "res://Native/AddStructure.gdns"
+}, {
+"base": "",
+"class": "BlightUpdateResult",
+"language": "NativeScript",
+"path": "res://Native/BlightUpdateResult.gdns"
+}, {
+"base": "",
+"class": "QueryResult",
+"language": "NativeScript",
+"path": "res://Native/QueryResult.gdns"
+}, {
+"base": "",
 "class": "SpatialApi",
 "language": "NativeScript",
 "path": "res://Native/SpatialApi.gdns"
@@ -25,6 +40,9 @@ _global_script_classes=[ {
 "path": "res://Native/Zeppelin.gdns"
 } ]
 _global_script_class_icons={
+"AddStructure": "",
+"BlightUpdateResult": "",
+"QueryResult": "",
 "SpatialApi": "",
 "Terrain": "",
 "Zeppelin": ""
