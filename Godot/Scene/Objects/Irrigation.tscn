@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Scene/Objects/Structure.gd" type="Script" id=1]
+[ext_resource path="res://Scene/Util/RisingText.tscn" type="PackedScene" id=2]
 
 [sub_resource type="BoxShape" id=3]
 
@@ -36,3 +37,8 @@ shape = SubResource( 4 )
 mesh = SubResource( 1 )
 skeleton = NodePath("../..")
 material/0 = null
+
+[node name="RisingText" parent="." instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.47012, 0 )
+textColor = Color( 0.133333, 0.796078, 0.239216, 1 )
+text = "hi you, something"

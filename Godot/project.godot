@@ -14,12 +14,12 @@ _global_script_classes=[ {
 "language": "NativeScript",
 "path": "res://Native/AddStructure.gdns"
 }, {
-"base": "",
+"base": "Reference",
 "class": "AmountsUpdated",
 "language": "NativeScript",
 "path": "res://Native/AmountsUpdated.gdns"
 }, {
-"base": "",
+"base": "Reference",
 "class": "BlightUpdated",
 "language": "NativeScript",
 "path": "res://Native/BlightUpdated.gdns"
