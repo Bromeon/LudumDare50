@@ -109,7 +109,7 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn update_blight(&mut self, _base: &Spatial, dt: f32) -> Instance<BlightUpdateResult> {
+	fn update_blight(&mut self, base: &Spatial, dt: f32) -> Instance<BlightUpdateResult> {
 		self.frame_count += 1;
 		let result = if let Some(inst) = self.terrain.as_mut() {
 			let result = inst
@@ -133,7 +133,8 @@ impl SpatialApi {
 		};
 
 		if !result.removed_pipe_ids.is_empty() {
-			self.update_pipe_network();
+			let world = base.get_parent().unwrap();
+			self.update_pipe_network(world);
 		}
 
 		Instance::emplace(result).into_shared()
@@ -276,7 +277,7 @@ impl SpatialApi {
 			.collect()
 	}
 
-	fn update_pipe_network(&mut self) {
+	fn update_pipe_network(&mut self, world: Ref<Node>) {
 		// Note: of course, we could only update from the changed pipes, but this is a more general approach
 		println!("Update pipe network...");
 
@@ -323,6 +324,10 @@ impl SpatialApi {
 			let id = stc.instance_id();
 			let powered = powered_structures.contains(&id);
 
+			if !stc.can_be_powered() {
+				continue;
+			}
+
 			// Update in 2 places (keep map and rtree in sync)
 			stc.set_powered(powered);
 			self.structures_by_id
@@ -331,7 +336,13 @@ impl SpatialApi {
 				.set_powered(powered);
 		}
 
-		println!("Done updating pipe network.\n");
+		for pipe in self.pipes.iter() {
+			let id = pipe.pipe_node_id();
+			let powered = powered_pipes.contains(&id);
+			world.call("setPowered", &v![id, powered]);
+		}
+
+		//println!("Done updating pipe network.\n");
 	}
 
 	fn recurse_pipe_graph(
@@ -350,7 +361,7 @@ impl SpatialApi {
 
 		let stc = structures_by_id.get(&stc_id).unwrap();
 		if stc.can_be_powered() {
-			println!("    Power {node_id}!");
+			//println!("    Power {stc_id}!");
 			powered_pipes.insert(pipe_id);
 			powered_structures.insert(stc_id);
 		}
@@ -358,7 +369,7 @@ impl SpatialApi {
 		for (pipe_id, adjacent_id) in
 			Self::get_pipe_adjacent_pairs(stc_id, pipes, visited_structures)
 		{
-			println!("  Explore {node_id} -> {adjacent_id}...");
+			//println!("  Explore pipe {pipe_id}: connects {stc_id} -> {adjacent_id}...");
 			Self::recurse_pipe_graph(
 				pipe_id,
 				adjacent_id,
@@ -416,7 +427,8 @@ impl SpatialApi {
 		self.structures_by_id.insert(stc.instance_id(), stc);
 		self.rtree.insert(stc);
 
-		self.update_pipe_network();
+		let world = base.get_parent().unwrap();
+		self.update_pipe_network(world);
 
 		stc.instance_id()
 	}

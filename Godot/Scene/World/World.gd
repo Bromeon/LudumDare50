@@ -13,6 +13,7 @@ var matDefault: SpatialMaterial
 var matHighlighted: SpatialMaterial
 var matSelected: SpatialMaterial
 var matAffected: SpatialMaterial
+var matPowered: SpatialMaterial
 
 var lastHoveredObj: Spatial = null
 var selectedObj: Spatial = null
@@ -20,6 +21,34 @@ var selectedObj: Spatial = null
 onready var ghostStc: Spatial = $Ghosts/Pump
 onready var ghostPipe: Spatial = $Ghosts/Pipe
 
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------
+# APIs called from Rust
+
+func alignPipe(pipe: Spatial, from: Vector3, to: Vector3) -> void:
+	var structureWidth = 0.2
+	var dist = from.distance_to(to) - structureWidth
+
+	pipe.transform = Transform() \
+		.translated(from) \
+		.scaled(Vector3(1, 1, 0.5 * dist)) \
+		.translated(-from)
+
+	pipe.transform.origin = from
+	pipe.look_at(to, Vector3.UP)
+
+
+func setPowered(instanceId: int, powered: bool) -> void:
+	#print("setPowered: ", instanceId, " powered=", powered)
+	var obj: Spatial = instance_from_id(instanceId)
+
+	if powered:
+		obj.applyMaterial(matPowered)
+	else:
+		obj.applyMaterial(matDefault)
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -40,6 +69,8 @@ func _ready():
 	matSelected.albedo_color = Color.darksalmon
 	matAffected = SpatialMaterial.new()
 	matAffected.albedo_color = Color.goldenrod
+	matPowered = SpatialMaterial.new()
+	matPowered.albedo_color = Color.blue
 
 	$BuildRadius.scale = 2 * Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
 
@@ -164,20 +195,6 @@ func showGhosts(from: Vector3, to: Vector3) -> void:
 
 	ghostPipe.visible = true
 	alignPipe(ghostPipe, from, to)
-
-
-# Called from Rust
-func alignPipe(pipe: Spatial, from: Vector3, to: Vector3) -> void:
-	var structureWidth = 0.2
-	var dist = from.distance_to(to) - structureWidth
-
-	pipe.transform = Transform() \
-		.translated(from) \
-		.scaled(Vector3(1, 1, 0.5 * dist)) \
-		.translated(-from)
-
-	pipe.transform.origin = from
-	pipe.look_at(to, Vector3.UP)
 
 
 # Returns object hit by mouse, or null if on ground

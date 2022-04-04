@@ -96,7 +96,6 @@ impl Structure {
 			StructureType::Irrigation => false,
 		}
 	}
-
 }
 
 impl RTreeObject for Structure {

@@ -141,4 +141,3 @@ text = "Ore amount: "
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Music"]
 stream = ExtResource( 19 )
-autoplay = true
