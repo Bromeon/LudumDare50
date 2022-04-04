@@ -185,11 +185,14 @@ func updateHovered(obj) -> void:
 		obj.applyMaterial(matHighlighted)
 	lastHoveredObj = obj
 
-	$EffectRadius.translation = obj.translation
-	$EffectRadius.visible = true
-
 	# Mark affected buildings (in effect radius)
 	var queried = $SpatialApi.query_effect_radius(obj)
+	if queried == null:
+		printerr("SHOULD NOT HAPPEN")
+		print("obj: ", obj)
+
+	$EffectRadius.translation = obj.translation
+	$EffectRadius.visible = true
 	$EffectRadius.scale = Vector3(queried.radius, 1.01, queried.radius)
 
 	for id in queried.affected_ids:
