@@ -11,6 +11,18 @@ pub enum StructureType {
 	Irrigation,
 }
 
+impl StructureType {
+	pub fn from_name(ty_name: &str) -> Self {
+		match ty_name {
+			"Water" => StructureType::Water,
+			"Ore" => StructureType::Ore,
+			"Pump" => StructureType::Pump,
+			"Irrigation" => StructureType::Irrigation,
+			_ => unreachable!(&format!("Invalid name '{}'", ty_name)),
+		}
+	}
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct Structure {
 	ty: StructureType,
@@ -30,6 +42,24 @@ impl Structure {
 			health,
 			powered: Self::initially_powered(ty),
 			amount: Self::initial_amount(ty),
+		}
+	}
+
+	pub fn ty_name(&self) -> &'static str {
+		match self.ty {
+			StructureType::Water => "Water",
+			StructureType::Ore => "Ore",
+			StructureType::Pump => "Pump",
+			StructureType::Irrigation => "Irrigation",
+		}
+	}
+
+	pub fn ty_description(&self) -> &'static str {
+		match self.ty {
+			StructureType::Water => "A water field can be connected to pumps and irrigation plants.",
+			StructureType::Ore => "Ore is your money; building pumps and irrigation plants costs ore.",
+			StructureType::Pump => "A water pump is a relay, allowing to extend the distance to your irrigation plants.",
+			StructureType::Irrigation => "Irrigation plants keep the blight away and mine ore.",
 		}
 	}
 

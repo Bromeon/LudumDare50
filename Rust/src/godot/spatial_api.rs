@@ -96,14 +96,7 @@ impl SpatialApi {
 			.unwrap()
 			.add_child(instanced, false);
 
-		let ty = match ty_name {
-			"Water" => StructureType::Water,
-			"Ore" => StructureType::Ore,
-			"Pump" => StructureType::Pump,
-			"Irrigation" => StructureType::Irrigation,
-			_ => unreachable!(),
-		};
-
+		let ty = StructureType::from_name(ty_name);
 		Structure::new(ty, pos, id, STRUCTURE_HEALTH)
 	}
 
@@ -664,6 +657,26 @@ impl SpatialApi {
 	#[export]
 	fn consume_ore(&mut self, _base: &Spatial, amt: i32) {
 		self.ore_amount = (self.ore_amount - amt).max(0)
+	}
+
+	#[export]
+	fn get_structure_info(&self, _base: &Spatial, instance_id: i64, minimal: bool) -> String {
+		if let Some(stc) = self.structures_by_id.get(&instance_id) {
+			let mut info = format!("{}", stc.ty_name());
+			if stc.can_be_powered() {
+				if stc.is_powered() {
+					info += " (powered)";
+				}
+			}
+
+			if !minimal {
+				info += stc.ty_description();
+			}
+
+			info
+		} else {
+			"?".to_string()
+		}
 	}
 }
 
