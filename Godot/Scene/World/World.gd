@@ -109,10 +109,11 @@ func _process(dt: float):
 		for i in amounts.animated_positions.size():
 			var amount = amounts.animated_diffs[i]
 			var pos = amounts.animated_positions[i]
+			var string = amounts.animated_strings[i]
 			var pos3d = Vector3(pos.x, .2, pos.y)
 
 			var rt = RisingText.instance()
-			rt.init(amount)
+			rt.init(amount, string)
 			$SceneUi.add_child(rt)
 			rt.translation = pos3d
 

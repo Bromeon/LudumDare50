@@ -12,5 +12,5 @@ func setVelTarget(target):
 
 func _process(delta):
 	velocity = lerp(velocity, velTarget, delta);
-	for propeller in propellers:
-		propeller.rotate_x(velocity * velScale * delta);
+	propellers[0].rotate_x(velocity * velScale * delta);
+	propellers[1].rotate_x(-velocity * velScale * delta);

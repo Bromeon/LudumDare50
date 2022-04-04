@@ -18,6 +18,10 @@ pub struct AmountsUpdated {
 	/// How much +/- ore (same size as above)
 	#[property]
 	pub animated_diffs: Int32Array,
+
+	/// How much +/- ore (same size as above)
+	#[property]
+	pub animated_strings: StringArray,
 }
 
 #[methods]
