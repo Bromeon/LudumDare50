@@ -2,6 +2,7 @@ extends Spatial
 
 const SpatialApi = preload("res://Native/SpatialApi.gdns")
 const AddStructure = preload("res://Native/AddStructure.gdns")
+const RisingText = preload("res://Scene/Util/RisingText.tscn")
 
 
 const RAY_LENGTH = 1000.0
@@ -103,6 +104,16 @@ func _process(dt: float):
 
 			oreObj.updateAmount(oreAmount)
 
+		for i in amounts.animated_positions.size():
+			var amount = amounts.animated_diffs[i]
+			var pos = amounts.animated_positions[i]
+			var pos3d = Vector3(pos.x, .2, pos.y)
+
+			var rt = RisingText.instance()
+			rt.init(amount)
+			$SceneUi.add_child(rt)
+			rt.translation = pos3d
+
 
 	handleMouseInteraction()
 
@@ -185,11 +196,14 @@ func updateHovered(obj) -> void:
 		obj.applyMaterial(matHighlighted)
 	lastHoveredObj = obj
 
-	$EffectRadius.translation = obj.translation
-	$EffectRadius.visible = true
-
 	# Mark affected buildings (in effect radius)
 	var queried = $SpatialApi.query_effect_radius(obj)
+	if queried == null:
+		printerr("SHOULD NOT HAPPEN")
+		print("obj: ", obj)
+
+	$EffectRadius.translation = obj.translation
+	$EffectRadius.visible = true
 	$EffectRadius.scale = Vector3(queried.radius, 1.01, queried.radius)
 
 	for id in queried.affected_ids:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=2]
+[gd_scene load_steps=27 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/SpatialApi.gdns" type="Script" id=2]
@@ -8,7 +8,6 @@
 [ext_resource path="res://Environment/Environment.tres" type="Environment" id=6]
 [ext_resource path="res://Textures/Grass2/Stylized_Grass_002_basecolor.jpg" type="Texture" id=7]
 [ext_resource path="res://Scene/Objects/Pump.tscn" type="PackedScene" id=8]
-[ext_resource path="res://Fonts/Coustard-Black.ttf" type="DynamicFontData" id=9]
 [ext_resource path="res://Scene/World/HUD.gd" type="Script" id=10]
 [ext_resource path="res://Textures/Grass2/Stylized_Grass_002_roughness.jpg" type="Texture" id=11]
 [ext_resource path="res://Textures/Blight2/Stylized_Dry_Mud_001_roughness.jpg" type="Texture" id=12]
@@ -19,6 +18,7 @@
 [ext_resource path="res://Scene/Objects/Pipe.tscn" type="PackedScene" id=17]
 [ext_resource path="res://Assets/Shader/Ground.gdshader" type="Shader" id=18]
 [ext_resource path="res://Assets/Music/Dawn.mp3" type="AudioStream" id=19]
+[ext_resource path="res://Assets/TextTheme.tres" type="Theme" id=20]
 
 [sub_resource type="PlaneMesh" id=4]
 size = Vector2( 25, 25 )
@@ -63,10 +63,6 @@ metallic_specular = 0.52
 material = SubResource( 9 )
 height = 0.1
 
-[sub_resource type="DynamicFont" id=11]
-size = 25
-font_data = ExtResource( 9 )
-
 [node name="World" type="Spatial"]
 script = ExtResource( 1 )
 
@@ -109,6 +105,8 @@ mesh = SubResource( 10 )
 skeleton = NodePath("../SpatialApi")
 material/0 = null
 
+[node name="SceneUi" type="Spatial" parent="."]
+
 [node name="Zeppelin" parent="." instance=ExtResource( 4 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.97746, 0 )
 
@@ -130,7 +128,7 @@ margin_left = 30.0
 margin_top = 21.0
 margin_right = 211.0
 margin_bottom = 99.0
-custom_fonts/font = SubResource( 11 )
+theme = ExtResource( 20 )
 text = "Ore amount: "
 
 [node name="Music" type="Node" parent="."]

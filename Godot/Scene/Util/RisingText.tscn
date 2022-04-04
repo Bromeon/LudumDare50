@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Scene/Util/Text2D.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Scene/Util/RisingText.gd" type="Script" id=2]
+
+[node name="RisingText" type="Spatial"]
+script = ExtResource( 2 )
+positiveColor = Color( 0.164706, 0.341176, 0.615686, 1 )
+negativeColor = Color( 0.580392, 0.262745, 0.321569, 1 )
+
+[node name="Text" parent="." instance=ExtResource( 1 )]
