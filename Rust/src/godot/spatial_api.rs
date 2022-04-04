@@ -142,6 +142,7 @@ impl SpatialApi {
 					&mut self.rtree,
 					&mut self.pipes,
 					&mut self.structures_by_id,
+					&mut self.irrigators_by_powering_water,
 					dt,
 					terrain,
 				)
@@ -152,8 +153,7 @@ impl SpatialApi {
 		};
 
 		if !result.removed_pipe_ids.is_empty() {
-			let world = base.get_parent().unwrap();
-			self.update_pipe_network(world);
+			self.update_pipe_network(base);
 		}
 
 		Instance::emplace(result).into_shared()
@@ -166,6 +166,7 @@ impl SpatialApi {
 		rtree: &mut RTree<Structure>,
 		pipes: &mut Vec<Pipe>,
 		structures_by_id: &mut HashMap<i64, Structure>,
+		irrigators_by_powering_water: &mut HashMap<i64, i64>,
 		dt: f32,
 		terrain: &mut Terrain,
 	) -> BlightUpdated {
@@ -195,19 +196,39 @@ impl SpatialApi {
 			}
 		}
 
+		let removed_pipe_ids = Self::remove_structures_qualified(
+			structures_to_remove,
+			rtree,
+			pipes,
+			structures_by_id,
+			irrigators_by_powering_water,
+		);
+
+		BlightUpdated { removed_pipe_ids }
+	}
+
+	/// Removes structures, updating refs
+	fn remove_structures_qualified(
+		structures_to_remove: Vec<Structure>,
+		rtree: &mut RTree<Structure>,
+		pipes: &mut Vec<Pipe>,
+		structures_by_id: &mut HashMap<i64, Structure>,
+		irrigators_by_powering_water: &mut HashMap<i64, i64>,
+	) -> Vec<i64> {
 		// Remove destroyed structures
 		let mut removed_pipe_ids = vec![];
-		for elem in structures_to_remove.iter() {
-			rtree.remove(elem);
-			structures_by_id.remove(&elem.instance_id());
+		for elem in structures_to_remove {
+			let id_to_remove = elem.instance_id();
 
 			unsafe {
 				autoload::<Node>("Sfx")
 					.unwrap()
 					.call("stopMachineSound", &[elem.instance_id().to_variant()]);
 			}
+			rtree.remove(&elem);
+			structures_by_id.remove(&id_to_remove);
 
-			let node_id = elem.instance_id();
+			let node_id = id_to_remove;
 			let node = unsafe { Node::from_instance_id(node_id) };
 			node.queue_free();
 
@@ -224,6 +245,18 @@ impl SpatialApi {
 					i += 1;
 				}
 			}
+
+			// Wipe all refs from this map too
+			// Values removal is strictly not necessary (because water can't be removed), but this is sure to blow up in the future
+			let mut keys_to_remove = vec![id_to_remove];
+			for (key, value) in irrigators_by_powering_water.iter_mut() {
+				if *value == id_to_remove {
+					keys_to_remove.push(*key);
+				}
+			}
+			for key in keys_to_remove {
+				irrigators_by_powering_water.remove(&key);
+			}
 		}
 
 		if !structures_to_remove.is_empty() {
@@ -233,12 +266,11 @@ impl SpatialApi {
 		if !removed_pipe_ids.is_empty() {
 			godot_print!("Removed pipe IDs: {:?}", removed_pipe_ids);
 		}
-
-		BlightUpdated { removed_pipe_ids }
+		removed_pipe_ids
 	}
 
 	#[export]
-	fn update_amounts(&mut self, _base: &Spatial) -> Option<Instance<AmountsUpdated>> {
+	fn update_amounts(&mut self, base: &Spatial) -> Option<Instance<AmountsUpdated>> {
 		let remaining_resource_amounts = Dictionary::new();
 		let mut animated_positions = Vector2Array::new();
 		let mut animated_diffs = Int32Array::new();
@@ -257,6 +289,15 @@ impl SpatialApi {
 			&mut animated_diffs,
 			&mut animated_strings,
 		);
+
+		let updated_water = match updated_water {
+			WaterResult::NothingToDo => false,
+			WaterResult::WaterConsumed => true,
+			WaterResult::WaterDepleted => {
+				self.update_pipe_network(base);
+				true
+			}
+		};
 
 		if updated_mines || updated_water {
 			let result = AmountsUpdated {
@@ -279,13 +320,19 @@ impl SpatialApi {
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
 		animated_strings: &mut PoolArray<GodotString>,
+<<<<<<< HEAD
 	) -> bool {
+=======
+	) -> WaterResult {
+>>>>>>> 439140bc1b2cb8de0420d09db336c1ecaf383af6
 		if (self.frame_count + WATER_TICK_OFFSET) % WATER_TICK_FREQ != 0 {
-			return false;
+			return WaterResult::NothingToDo;
 		}
 
 		// Changed in RTree, needs HashMap update
 		let mut structures_to_sync = vec![];
+
+		let mut result = WaterResult::WaterConsumed;
 
 		// Trace back each irrigator to its water source
 		for irrigator in self
@@ -322,6 +369,8 @@ impl SpatialApi {
 				animated_positions.push(irrigator.position());
 				animated_diffs.push(water_consumed);
 				animated_strings.push("Water".into());
+			} else {
+				result = WaterResult::WaterDepleted;
 			}
 		}
 
@@ -339,7 +388,7 @@ impl SpatialApi {
 			remaining_resource_amounts.insert(water.instance_id(), water.amount());
 		}
 
-		true
+		result
 	}
 
 	fn is_powered_irrigator(stc: &Structure) -> bool {
@@ -450,7 +499,7 @@ impl SpatialApi {
 			.collect()
 	}
 
-	fn update_pipe_network(&mut self, world: Ref<Node>) {
+	fn update_pipe_network(&mut self, base: &Spatial) {
 		// Note: of course, we could only update from the changed pipes, but this is a more general approach
 		println!("Update pipe network...");
 
@@ -465,7 +514,7 @@ impl SpatialApi {
 
 			let start_id = pipe.start_node_id();
 			let start_stc = *self.structures_by_id.get(&start_id).unwrap();
-			if start_stc.ty() == StructureType::Water {
+			if start_stc.ty() == StructureType::Water && start_stc.amount() > 0 {
 				powered_structures.insert(start_id, start_id); // water to itself
 				powered_pipes.insert(pipe_id);
 				graph_roots.push((pipe_id, start_id));
@@ -473,7 +522,7 @@ impl SpatialApi {
 
 			let end_id = pipe.end_node_id();
 			let end_stc = *self.structures_by_id.get(&end_id).unwrap();
-			if end_stc.ty() == StructureType::Water {
+			if end_stc.ty() == StructureType::Water && start_stc.amount() > 0 {
 				powered_structures.insert(end_id, end_id); // water to itself
 				powered_pipes.insert(pipe_id);
 				graph_roots.push((pipe_id, end_id));
@@ -494,6 +543,9 @@ impl SpatialApi {
 		}
 
 		// Apply changes to every structure
+		self.irrigators_by_powering_water.clear();
+
+		let world = base.get_parent().unwrap();
 		for stc in self.rtree.iter_mut() {
 			let id = stc.instance_id();
 			let powering_water = powered_structures.get(&id);
@@ -612,8 +664,7 @@ impl SpatialApi {
 		self.structures_by_id.insert(stc.instance_id(), stc);
 		self.rtree.insert(stc);
 
-		let world = base.get_parent().unwrap();
-		self.update_pipe_network(world);
+		self.update_pipe_network(base);
 
 		stc.instance_id()
 	}
@@ -645,3 +696,10 @@ fn random_positions(n: usize) -> Vec<Vector2> {
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------
+
+enum WaterResult {
+	NothingToDo,
+	WaterConsumed,
+	/// If at least one water field depletes, need to recompute pipes
+	WaterDepleted,
+}
