@@ -81,12 +81,16 @@ func _process(dt: float):
 		get_tree().quit()
 		return
 
+	$SpatialApi.update_frame_count()
 	var result = $SpatialApi.update_blight(dt)
 	for id in result.removed_pipe_ids:
 		var node = instance_from_id(id)
 		node.queue_free()
 
+	$SpatialApi.update_amounts()
 	$HUD.set_ore_amount($SpatialApi.get_ore_amount())
+
+
 
 	handleMouseInteraction()
 
