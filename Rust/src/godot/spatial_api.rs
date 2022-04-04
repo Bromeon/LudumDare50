@@ -232,17 +232,20 @@ impl SpatialApi {
 		let remaining_resource_amounts = Dictionary::new();
 		let mut animated_positions = Vector2Array::new();
 		let mut animated_diffs = Int32Array::new();
+		let mut animated_strings = StringArray::new();
 
 		let updated_water = self.update_water_amounts(
 			&remaining_resource_amounts,
 			&mut animated_positions,
 			&mut animated_diffs,
+			&mut animated_strings,
 		);
 
 		let updated_mines = self.update_mining_amounts(
 			&remaining_resource_amounts,
 			&mut animated_positions,
 			&mut animated_diffs,
+			&mut animated_strings,
 		);
 
 		if updated_mines || updated_water {
@@ -251,6 +254,7 @@ impl SpatialApi {
 				remaining_resource_amounts: remaining_resource_amounts.into_shared(),
 				animated_positions,
 				animated_diffs,
+				animated_strings,
 			};
 
 			Some(Instance::emplace(result).into_shared())
@@ -264,6 +268,7 @@ impl SpatialApi {
 		remaining_resource_amounts: &Dictionary<Unique>,
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
+		animated_strings :&mut PoolArray<GodotString>,
 	) -> bool {
 		if (self.frame_count + WATER_TICK_OFFSET) % WATER_TICK_FREQ != 0 {
 			return false;
@@ -302,9 +307,11 @@ impl SpatialApi {
 			if water_consumed != 0 {
 				animated_positions.push(water_in_rtree.position());
 				animated_diffs.push(-water_consumed);
+				animated_strings.push("Water".into());
 
 				animated_positions.push(irrigator.position());
 				animated_diffs.push(water_consumed);
+				animated_strings.push("Water".into());
 			}
 		}
 
@@ -334,6 +341,7 @@ impl SpatialApi {
 		remaining_resource_amounts: &Dictionary<Unique>,
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
+		animated_strings :&mut PoolArray<GodotString>,
 	) -> bool {
 		if self.frame_count % MINER_TICK_FREQ != 0 {
 			return false;
@@ -361,6 +369,8 @@ impl SpatialApi {
 					if mined_amount > 0 {
 						animated_positions.push(stc.position());
 						animated_diffs.push(-mined_amount);
+						animated_strings.push("Ore".into());
+
 						remaining_resource_amounts.insert(stc.instance_id(), stc.amount())
 					}
 				}
@@ -370,6 +380,7 @@ impl SpatialApi {
 			if mined_in_cycle > 0 {
 				animated_positions.push(irrigator.position());
 				animated_diffs.push(mined_in_cycle);
+				animated_strings.push("Ore".into());
 			}
 		}
 

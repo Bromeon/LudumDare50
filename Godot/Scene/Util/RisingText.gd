@@ -12,13 +12,13 @@ var usedColor: Color
 var remainingLife: float = LIFETIME
 var num: int
 
-func init(number: int):
+func init(number: int, string: String):
 	num = number
 
-	var prefix = ""
+	var prefix = str(string, ": ")
 	if num >= 0:
 		usedColor = positiveColor
-		prefix = "+"
+		prefix += "+"
 	else:
 		usedColor = negativeColor
 
