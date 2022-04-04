@@ -142,6 +142,7 @@ impl SpatialApi {
 					&mut self.rtree,
 					&mut self.pipes,
 					&mut self.structures_by_id,
+					&mut self.irrigators_by_powering_water,
 					dt,
 					terrain,
 				)
@@ -165,6 +166,7 @@ impl SpatialApi {
 		rtree: &mut RTree<Structure>,
 		pipes: &mut Vec<Pipe>,
 		structures_by_id: &mut HashMap<i64, Structure>,
+		irrigators_by_powering_water: &mut HashMap<i64, i64>,
 		dt: f32,
 		terrain: &mut Terrain,
 	) -> BlightUpdated {
@@ -194,13 +196,34 @@ impl SpatialApi {
 			}
 		}
 
+		let removed_pipe_ids = Self::remove_structures_qualified(
+			structures_to_remove,
+			rtree,
+			pipes,
+			structures_by_id,
+			irrigators_by_powering_water,
+		);
+
+		BlightUpdated { removed_pipe_ids }
+	}
+
+	/// Removes structures, updating refs
+	fn remove_structures_qualified(
+		structures_to_remove: Vec<Structure>,
+		rtree: &mut RTree<Structure>,
+		pipes: &mut Vec<Pipe>,
+		structures_by_id: &mut HashMap<i64, Structure>,
+		irrigators_by_powering_water: &mut HashMap<i64, i64>,
+	) -> Vec<i64> {
 		// Remove destroyed structures
 		let mut removed_pipe_ids = vec![];
-		for elem in structures_to_remove.iter() {
-			rtree.remove(elem);
-			structures_by_id.remove(&elem.instance_id());
+		for elem in structures_to_remove {
+			let id_to_remove = elem.instance_id();
 
-			let node_id = elem.instance_id();
+			rtree.remove(&elem);
+			structures_by_id.remove(&id_to_remove);
+
+			let node_id = id_to_remove;
 			let node = unsafe { Node::from_instance_id(node_id) };
 			node.queue_free();
 
@@ -217,13 +240,24 @@ impl SpatialApi {
 					i += 1;
 				}
 			}
+
+			// Wipe all refs from this map too
+			// Values removal is strictly not necessary (because water can't be removed), but this is sure to blow up in the future
+			let mut keys_to_remove = vec![id_to_remove];
+			for (key, value) in irrigators_by_powering_water.iter_mut() {
+				if *value == id_to_remove {
+					keys_to_remove.push(*key);
+				}
+			}
+			for key in keys_to_remove {
+				irrigators_by_powering_water.remove(&key);
+			}
 		}
 
 		if !removed_pipe_ids.is_empty() {
 			godot_print!("Removed pipe IDs: {:?}", removed_pipe_ids);
 		}
-
-		BlightUpdated { removed_pipe_ids }
+		removed_pipe_ids
 	}
 
 	#[export]
