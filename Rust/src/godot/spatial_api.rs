@@ -111,7 +111,13 @@ impl SpatialApi {
 		if let Some(inst) = self.terrain.as_mut() {
 			let collected_ore = inst
 				.map_mut(|terrain, _| {
-					Self::update_blight_impl(&mut self.rtree, dt, terrain, self.frame_count)
+					Self::update_blight_impl(
+						&mut self.rtree,
+						&mut self.pipes,
+						dt,
+						terrain,
+						self.frame_count,
+					)
 				})
 				.unwrap();
 			self.ore_amount += collected_ore;
@@ -123,11 +129,12 @@ impl SpatialApi {
 	#[allow(unreachable_code)]
 	fn update_blight_impl(
 		rtree: &mut RTree<Structure>,
+		pipes: &mut Vec<Pipe>,
 		dt: f32,
 		terrain: &mut Terrain,
 		frame_count: usize,
 	) -> u32 {
-		let mut to_remove = vec![];
+		let mut structures_to_remove = vec![];
 		let mut ores = vec![];
 
 		for stc in rtree.iter_mut() {
@@ -148,13 +155,8 @@ impl SpatialApi {
 			}
 
 			if !stc.is_alive() {
-				to_remove.push(*stc);
+				structures_to_remove.push(*stc);
 			}
-		}
-
-		// RTree API only allows removal one at a time
-		if !to_remove.is_empty() {
-			//println!("Remove {} structures", to_remove.len());
 		}
 
 		let mut ore_collected = 0;
@@ -170,11 +172,27 @@ impl SpatialApi {
 			}
 		}
 
-		for elem in to_remove.iter() {
+		// Remove destroyed structures
+		let mut removed_pipe_ids = vec![];
+		for elem in structures_to_remove.iter() {
 			rtree.remove(elem);
 
-			let node = unsafe { Node::from_instance_id(elem.instance_id()) };
+			let node_id = elem.instance_id();
+			let node = unsafe { Node::from_instance_id(node_id) };
 			node.queue_free();
+
+			// O(n^2), could be done by Multimap<i64, Structure> (or HashMap<i64, Vec<Structure>>) but likely won't matter in this scale
+			//pipes.retain(|pipe| pipe.start_id() != node_id && pipe.end_id() != node_id);
+
+			let mut i = 0;
+			while i < pipes.len() {
+				let pipe = &pipes[i];
+				if pipe.start_id() == node_id || pipe.end_id() == node_id {
+					pipes.swap_remove(i);
+				} else {
+					i += 1;
+				}
+			}
 		}
 
 		ore_collected
