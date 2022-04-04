@@ -16,12 +16,15 @@ const STRUCTURE_HEALTH: f32 = 100.0;
 const ORE_PER_COLLECTION: i32 = 5;
 
 /// The amount of water used by irrigators each second
-const WATER_SPENT_PER_SECOND: i32 = 5;
+const WATER_SPENT_PER_SECOND: i32 = 1;
 
 /// The frequency, in number of physics frames, after which active miners will
 /// collect ore
-const MINER_TICK_FREQ: usize = 60 * 2;
+const MINER_TICK_FREQ: usize = 60 * 5;
 const WATER_TICK_FREQ: usize = 60;
+
+// Make sure water doesn't update at same time as ore (animations)
+const WATER_TICK_OFFSET: usize = 30;
 
 #[derive(NativeClass)]
 #[inherit(Spatial)]
@@ -262,7 +265,7 @@ impl SpatialApi {
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
 	) -> bool {
-		if self.frame_count % WATER_TICK_FREQ != 0 {
+		if (self.frame_count + WATER_TICK_OFFSET) % WATER_TICK_FREQ != 0 {
 			return false;
 		}
 
