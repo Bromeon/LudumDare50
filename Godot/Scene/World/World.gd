@@ -81,6 +81,10 @@ func _process(dt: float):
 		get_tree().quit()
 		return
 
+	if Input.is_action_just_pressed("ui_restart"):
+		restartGame()
+		return
+
 	$SpatialApi.update_frame_count()
 	var result = $SpatialApi.update_blight(dt)
 	for id in result.removed_pipe_ids:
@@ -238,3 +242,9 @@ func raycastMouseGround(localMousePos: Vector2) -> Vector3:
 
 	#print("Projected: ", projection)
 	return projection
+
+
+func restartGame():
+	var success = get_tree().reload_current_scene()
+	if success != OK:
+		printerr("Error reloading game scene")
