@@ -3,7 +3,7 @@
 [ext_resource path="res://Native/NativeLib.gdnlib" type="GDNativeLibrary" id=1]
 
 [resource]
-resource_name = "BlightUpdateResult"
-class_name = "BlightUpdateResult"
+resource_name = "BlightUpdated"
+class_name = "BlightUpdated"
 library = ExtResource( 1 )
-script_class_name = "BlightUpdateResult"
+script_class_name = "BlightUpdated"

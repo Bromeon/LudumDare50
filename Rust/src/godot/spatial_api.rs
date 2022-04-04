@@ -4,7 +4,7 @@ use rstar::{RTree, AABB};
 use std::collections::{HashMap, HashSet};
 //use std::collections::HashMap;
 
-use crate::godot::{AddStructure, AmountsUpdated, BlightUpdateResult, QueryResult, Terrain};
+use crate::godot::{AddStructure, AmountsUpdated, BlightUpdated, QueryResult, Terrain};
 use crate::objects::{Pipe, Structure, StructureType};
 use crate::{Vector2Ext, Vector3Ext};
 
@@ -115,7 +115,7 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn update_blight(&mut self, base: &Spatial, dt: f32) -> Instance<BlightUpdateResult> {
+	fn update_blight(&mut self, base: &Spatial, dt: f32) -> Instance<BlightUpdated> {
 		let result = if let Some(inst) = self.terrain.as_mut() {
 			inst.map_mut(|terrain, _| {
 				Self::update_blight_impl(
@@ -128,7 +128,7 @@ impl SpatialApi {
 			})
 			.unwrap()
 		} else {
-			BlightUpdateResult::default()
+			BlightUpdated::default()
 		};
 
 		if !result.removed_pipe_ids.is_empty() {
@@ -148,7 +148,7 @@ impl SpatialApi {
 		structures_by_id: &mut HashMap<i64, Structure>,
 		dt: f32,
 		terrain: &mut Terrain,
-	) -> BlightUpdateResult {
+	) -> BlightUpdated {
 		let mut structures_to_remove = vec![];
 
 		for stc in rtree.iter_mut() {
@@ -202,7 +202,7 @@ impl SpatialApi {
 			godot_print!("Removed pipe IDs: {:?}", removed_pipe_ids);
 		}
 
-		BlightUpdateResult { removed_pipe_ids }
+		BlightUpdated { removed_pipe_ids }
 	}
 
 	#[export]

@@ -1,13 +1,13 @@
 use gdnative::prelude::*;
 
 #[derive(NativeClass, Debug, Default)]
-pub struct BlightUpdateResult {
+pub struct BlightUpdated {
 	#[property(get = "Self::get_removed_pipe_ids")]
 	pub removed_pipe_ids: Vec<i64>,
 }
 
 #[methods]
-impl BlightUpdateResult {
+impl BlightUpdated {
 	fn new(_base: &Reference) -> Self {
 		Self::default()
 	}
