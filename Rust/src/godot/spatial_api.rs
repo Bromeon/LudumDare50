@@ -54,8 +54,8 @@ impl SpatialApi {
 
 		let mut structures = vec![];
 
-		let variants = ["Water", "Ore", "Pump", "Irrigation"];
-		for pos in random_positions(20) {
+		let variants = ["Water", "Ore", "Ore", "Ore"];//, "Pump", "Irrigation"];
+		for pos in random_positions(10) {
 			let ty_name = variants.into_iter().choose(&mut thread_rng()).unwrap();
 			let stc = self.instance_structure(base, pos, ty_name);
 
