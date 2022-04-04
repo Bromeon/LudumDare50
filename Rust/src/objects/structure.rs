@@ -94,8 +94,8 @@ impl Structure {
 		}
 	}
 
-	pub fn amount(&self) -> Option<u32> {
-		self.amount
+	pub fn amount(&self) -> u32 {
+		self.amount.expect("Queried amount of invalid type")
 	}
 
 	// Constructor helpers

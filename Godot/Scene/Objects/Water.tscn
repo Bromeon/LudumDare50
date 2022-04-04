@@ -11,6 +11,7 @@ points = PoolVector3Array( 2, 2, 0, 2, -2, 0, -2, 2, 0, -2, -2, 0 )
 [node name="Water" type="Spatial"]
 transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0 )
 script = ExtResource( 1 )
+baseText = "Water"
 
 [node name="Core" type="StaticBody" parent="."]
 

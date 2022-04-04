@@ -15,9 +15,14 @@ _global_script_classes=[ {
 "path": "res://Native/AddStructure.gdns"
 }, {
 "base": "",
-"class": "BlightUpdateResult",
+"class": "AmountsUpdated",
 "language": "NativeScript",
-"path": "res://Native/BlightUpdateResult.gdns"
+"path": "res://Native/AmountsUpdated.gdns"
+}, {
+"base": "",
+"class": "BlightUpdated",
+"language": "NativeScript",
+"path": "res://Native/BlightUpdated.gdns"
 }, {
 "base": "",
 "class": "QueryResult",
@@ -41,7 +46,8 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "AddStructure": "",
-"BlightUpdateResult": "",
+"AmountsUpdated": "",
+"BlightUpdated": "",
 "QueryResult": "",
 "SpatialApi": "",
 "Terrain": "",

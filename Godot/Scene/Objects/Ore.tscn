@@ -22,6 +22,7 @@ points = PoolVector3Array( -0.881701, -1, -1.21353, -1.42658, -1, 0.463304, -1.1
 [node name="Ore" type="Spatial"]
 transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0 )
 script = ExtResource( 1 )
+baseText = "Ore"
 
 [node name="Core" type="StaticBody" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
