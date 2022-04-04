@@ -1,5 +1,7 @@
 extends Spatial
 
+# for later: https://www.youtube.com/watch?v=ilBCnt_WE58
+
 export(String) var text setget _setString
 export(Color) var textColor setget _setColor
 
@@ -21,9 +23,13 @@ func _setColor(c: Color) -> void:
 
 
 func _process(_delta):
+	var textPos = get_global_transform().origin
 	var cam = get_viewport().get_camera()
-	var pos2d = cam.unproject_position(get_global_transform().origin)
+	var pos2d = cam.unproject_position(textPos)
+
+	var factor = 1#.1 * textPos.distance_to(cam.global_transform.origin)
 
 	label.rect_position = pos2d - label.rect_size / 2.0
+	label.rect_scale = factor * Vector2.ONE
 
-	#print("2D Pos: ", pos2d)
+	print("rect scale: ", label.rect_scale)
