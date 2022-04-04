@@ -9,6 +9,7 @@ use crate::objects::{Pipe, Structure, StructureType};
 use crate::{Vector2Ext, Vector3Ext};
 
 const DAMAGE_PER_SECOND: f32 = 80.0;
+const BLIGHT_THRESHOLD: u8 = 200;
 const STRUCTURE_HEALTH: f32 = 100.0;
 
 /// The amount of collected ore per simulation tick when there's an active miner
@@ -164,8 +165,10 @@ impl SpatialApi {
 				let blight =
 					terrain.get_average_blight_in_circle(stc.position().to_3d(), damage_radius);
 
-				let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
-				stc.deal_damage(damage);
+				if blight > BLIGHT_THRESHOLD {
+					let damage = dt * DAMAGE_PER_SECOND * blight as f32 / 256.0;
+					stc.deal_damage(damage);
+				}
 			}
 
 			if !stc.is_alive() {
@@ -271,7 +274,6 @@ impl SpatialApi {
 		rtree
 			.locate_in_envelope_mut(&aabb)
 			.filter(move |stc| stc.position().distance_squared_to(center) < radius_sq)
-		//.copied()
 	}
 
 	#[export]
