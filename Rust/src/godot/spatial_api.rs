@@ -214,9 +214,18 @@ impl SpatialApi {
 			return None;
 		}
 
-		let ore_fields_remaining_amounts = Dictionary::new();
+		let remaining_resource_amounts = Dictionary::new();
 		let mut animated_positions = Vector2Array::new();
 		let mut animated_diffs = Int32Array::new();
+
+		// Iterate connected waters
+		for water in self.structures_by_id.values() {
+			if water.ty() != StructureType::Water {
+				continue;
+			}
+
+			remaining_resource_amounts.insert(water.instance_id(), water.amount());
+		}
 
 		// Iterate irrigators
 		for irrigator in self.structures_by_id.values() {
@@ -243,7 +252,7 @@ impl SpatialApi {
 					animated_positions.push(stc.position());
 					animated_diffs.push(-ORE_PER_COLLECTION);
 
-					ore_fields_remaining_amounts.insert(stc.instance_id(), stc.amount())
+					remaining_resource_amounts.insert(stc.instance_id(), stc.amount())
 				}
 			}
 
@@ -254,7 +263,7 @@ impl SpatialApi {
 
 		let result = AmountsUpdated {
 			total_ore: self.ore_amount,
-			ore_fields_remaining_amounts: ore_fields_remaining_amounts.into_shared(),
+			remaining_resource_amounts: remaining_resource_amounts.into_shared(),
 			animated_positions,
 			animated_diffs,
 		};

@@ -9,7 +9,7 @@ pub struct AmountsUpdated {
 	/// Map of instance ID (ore structures) to remaining amount in that field
 	/// Type: \[int] -> int
 	#[property]
-	pub ore_fields_remaining_amounts: Dictionary,
+	pub remaining_resource_amounts: Dictionary,
 
 	/// Where +/- ore happened
 	#[property]

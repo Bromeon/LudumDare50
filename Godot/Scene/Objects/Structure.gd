@@ -18,7 +18,7 @@ func _ready():
 
 
 func updateAmount(amount: int) -> void:
-	var tnode = get_node_or_null("Text3D")
+	var tnode = get_node_or_null("Text")
 	if tnode:
 		tnode.text = str(baseText, ": ", amount)
 

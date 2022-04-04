@@ -96,7 +96,7 @@ func _process(dt: float):
 	if amounts != null:
 		$HUD.set_ore_amount(amounts.total_ore)
 
-		var remain = amounts.ore_fields_remaining_amounts
+		var remain = amounts.remaining_resource_amounts
 		for id in remain:
 			var oreAmount = remain[id]
 			var oreObj = instance_from_id(id)
