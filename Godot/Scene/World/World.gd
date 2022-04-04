@@ -72,7 +72,7 @@ func _ready():
 	matPowered = SpatialMaterial.new()
 	matPowered.albedo_color = Color.blue
 
-	$BuildRadius.scale = 2 * Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
+	$BuildRadius.scale = Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
 
 
 func _process(dt: float):

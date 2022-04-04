@@ -51,8 +51,6 @@ metallic_specular = 0.52
 
 [sub_resource type="CylinderMesh" id=8]
 material = SubResource( 7 )
-top_radius = 0.5
-bottom_radius = 0.5
 height = 0.1
 
 [sub_resource type="SpatialMaterial" id=9]
@@ -63,8 +61,6 @@ metallic_specular = 0.52
 
 [sub_resource type="CylinderMesh" id=10]
 material = SubResource( 9 )
-top_radius = 0.5
-bottom_radius = 0.5
 height = 0.1
 
 [sub_resource type="DynamicFont" id=11]

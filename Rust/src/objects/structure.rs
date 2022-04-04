@@ -43,13 +43,13 @@ impl Structure {
 		}
 	}
 
-	// When this building is powered, the
+	// When this building is powered, the radius inside which there is a "protective" effect, cleaning blight
 	pub fn clean_radius(&self) -> Option<f32> {
 		match self.ty {
-			StructureType::Water => Some(3.0),
+			StructureType::Water => Some(1.5),
 			StructureType::Ore => None, // Doesn't clean
 			StructureType::Pump => None,
-			StructureType::Irrigation => Some(8.0),
+			StructureType::Irrigation => Some(5.0),
 		}
 	}
 

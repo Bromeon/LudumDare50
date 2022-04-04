@@ -144,7 +144,7 @@ impl Terrain {
 	pub fn clean_circle(&mut self, center: Vector3, radius: f32) {
 		let center_grid = self.world2grid(center);
 		let half_size = TerrainArray::WIDTH as f32 / 2.0;
-		let radius_grid = ((radius / self.measurements.plane_size.x) * half_size) as usize;
+		let radius_grid = (2.0 * (radius / self.measurements.plane_size.x) * half_size) as usize;
 		let circle = Shape::Circle {
 			center: center_grid,
 			radius: radius_grid,

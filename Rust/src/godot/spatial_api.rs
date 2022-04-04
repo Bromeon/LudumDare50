@@ -271,7 +271,7 @@ impl SpatialApi {
 		rtree
 			.locate_in_envelope_mut(&aabb)
 			.filter(move |stc| stc.position().distance_squared_to(center) < radius_sq)
-			//.copied()
+		//.copied()
 	}
 
 	#[export]
