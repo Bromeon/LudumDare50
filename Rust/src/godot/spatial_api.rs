@@ -158,7 +158,9 @@ impl SpatialApi {
 			profiling::scope!("blight");
 
 			if stc.is_powered() {
-				terrain.clean_circle(stc.position().to_3d(), stc.clean_radius());
+				if let Some(radius) = stc.clean_radius() {
+					terrain.clean_circle(stc.position().to_3d(), radius);
+				}
 			} else if let Some(damage_radius) = stc.damage_radius() {
 				let blight =
 					terrain.get_average_blight_in_circle(stc.position().to_3d(), damage_radius);
@@ -250,7 +252,8 @@ impl SpatialApi {
 		let stc = self.structures_by_id.get(&node.get_instance_id());
 		let stc = stc.expect("Queried non-structure object, make sure that collision shapes of other objects are disabled");
 
-		let radius = stc.clean_radius();
+		// Drawing a circle of radius 0 is OK if there's nothing
+		let radius = stc.clean_radius().unwrap_or(0.0);
 		let affected_ids = self.query_affected_ids(node.translation(), radius);
 
 		let result = QueryResult {
