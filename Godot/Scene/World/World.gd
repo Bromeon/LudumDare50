@@ -170,9 +170,11 @@ func handleMouseInteraction():
 		$SceneUi/EffectRadius.visible = false
 
 
+		var buildingCost = PUMP_COST if placedStructureType == "Pump" else IRRIGATION_COST
 		var groundPosInRange = null
 		if selectedObj != null:
-			updateTooltip(null, "Right click: place\nScroll wheel: switch building")
+			var s = str(placedStructureType, " (cost ", buildingCost, ")")
+			updateTooltip(null, str("Right click: place ", s, "\nScroll wheel: switch building"))
 
 			var groundPos = raycastMouseGround(localMousePos)
 			if groundPos.distance_squared_to(selectedObj.translation) < BUILD_RADIUS * BUILD_RADIUS:
@@ -193,7 +195,6 @@ func handleMouseInteraction():
 
 		# Place building
 		if Input.is_action_just_pressed("right_click"):
-			var buildingCost = PUMP_COST if placedStructureType == "Pump" else IRRIGATION_COST
 			if $SpatialApi.can_consume_ore(buildingCost):
 				$SpatialApi.consume_ore(buildingCost)
 				if groundPosInRange != null:
