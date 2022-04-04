@@ -4,15 +4,15 @@ use rstar::{RTree, AABB};
 use std::collections::{HashMap, HashSet};
 //use std::collections::HashMap;
 
-use crate::godot::{AddStructure, BlightUpdateResult, QueryResult, Terrain};
-use crate::objects::{Pipe, Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
+use crate::godot::{AddStructure, AmountsUpdated, BlightUpdated, QueryResult, Terrain};
+use crate::objects::{Pipe, Structure, StructureType};
 use crate::{Vector2Ext, Vector3Ext};
 
 const DAMAGE_PER_SECOND: f32 = 80.0;
 const STRUCTURE_HEALTH: f32 = 100.0;
 
 /// The amount of collected ore per simulation tick when there's an active miner
-const ORE_PER_COLLECTION: u32 = 5;
+const ORE_PER_COLLECTION: i32 = 5;
 /// The frequency, in number of physics frames, after which active miners will
 /// collect ore
 const MINER_TICK_FREQ: usize = 60 * 2;
@@ -27,7 +27,7 @@ pub struct SpatialApi {
 	terrain: Option<Instance<Terrain>>,
 
 	scenes: Dictionary,
-	ore_amount: u32,
+	ore_amount: i32,
 	frame_count: usize,
 }
 
@@ -108,28 +108,27 @@ impl SpatialApi {
 		(instanced, id)
 	}
 
+	// Separate function to avoid reorder bugs in GDScript
 	#[export]
-	fn update_blight(&mut self, base: &Spatial, dt: f32) -> Instance<BlightUpdateResult> {
+	fn update_frame_count(&mut self, _base: &Spatial) {
 		self.frame_count += 1;
+	}
+
+	#[export]
+	fn update_blight(&mut self, base: &Spatial, dt: f32) -> Instance<BlightUpdated> {
 		let result = if let Some(inst) = self.terrain.as_mut() {
-			let result = inst
-				.map_mut(|terrain, _| {
-					Self::update_blight_impl(
-						&mut self.rtree,
-						&mut self.pipes,
-						&mut self.structures_by_id,
-						dt,
-						terrain,
-						self.frame_count,
-					)
-				})
-				.unwrap();
-
-			self.ore_amount += result.collected_ore;
-
-			result
+			inst.map_mut(|terrain, _| {
+				Self::update_blight_impl(
+					&mut self.rtree,
+					&mut self.pipes,
+					&mut self.structures_by_id,
+					dt,
+					terrain,
+				)
+			})
+			.unwrap()
 		} else {
-			BlightUpdateResult::default()
+			BlightUpdated::default()
 		};
 
 		if !result.removed_pipe_ids.is_empty() {
@@ -149,10 +148,8 @@ impl SpatialApi {
 		structures_by_id: &mut HashMap<i64, Structure>,
 		dt: f32,
 		terrain: &mut Terrain,
-		frame_count: usize,
-	) -> BlightUpdateResult {
+	) -> BlightUpdated {
 		let mut structures_to_remove = vec![];
-		let mut ores = vec![];
 
 		for stc in rtree.iter_mut() {
 			profiling::scope!("blight");
@@ -171,25 +168,8 @@ impl SpatialApi {
 				stc.deal_damage(damage);
 			}
 
-			if frame_count % MINER_TICK_FREQ == 0 && matches!(stc.ty(), StructureType::Ore) {
-				ores.push(*stc);
-			}
-
 			if !stc.is_alive() {
 				structures_to_remove.push(*stc);
-			}
-		}
-
-		let mut collected_ore = 0;
-		if frame_count % MINER_TICK_FREQ == 0 {
-			for ore in ores {
-				// If there's at least one irrigation covering this ore, then it
-				// will collect ore for the frame.
-				if Self::iter_structures_in_radius(rtree, ore.position(), IRRIGATION_CLEAN_RADIUS)
-					.any(|other| matches!(other.ty(), StructureType::Ore))
-				{
-					collected_ore += ORE_PER_COLLECTION;
-				}
 			}
 		}
 
@@ -222,17 +202,63 @@ impl SpatialApi {
 			godot_print!("Removed pipe IDs: {:?}", removed_pipe_ids);
 		}
 
-		BlightUpdateResult {
-			collected_ore,
-			removed_pipe_ids,
+		BlightUpdated { removed_pipe_ids }
+	}
+
+	#[export]
+	fn update_amounts(&mut self, _base: &Spatial) -> Option<Instance<AmountsUpdated>> {
+		if self.frame_count % MINER_TICK_FREQ != 0 {
+			return None;
 		}
+
+		let ore_fields_remaining_amounts = Dictionary::new();
+		let mut animated_positions = Vector2Array::new();
+		let mut animated_diffs = Int32Array::new();
+
+		// Iterate irrigators
+		for irrigator in self.structures_by_id.values() {
+			// Skip non-irrigators and inactive ones
+			// FIXME powered
+			if irrigator.ty() != StructureType::Irrigation
+			/* || !irrigator.is_powered()*/
+			{
+				continue;
+			}
+
+			let surrounding = Self::iter_structures_in_radius(
+				&mut self.rtree,
+				irrigator.position(),
+				irrigator.clean_radius().unwrap(),
+			);
+
+			for stc in surrounding {
+				if stc.ty() == StructureType::Ore {
+					let mined = stc.mine_amount(ORE_PER_COLLECTION);
+					self.ore_amount += mined;
+
+					animated_positions.push(stc.position());
+					animated_diffs.push(-ORE_PER_COLLECTION);
+
+					ore_fields_remaining_amounts.insert(stc.instance_id(), stc.amount())
+				}
+			}
+		}
+
+		let result = AmountsUpdated {
+			total_ore: self.ore_amount,
+			ore_fields_remaining_amounts: ore_fields_remaining_amounts.into_shared(),
+			animated_positions,
+			animated_diffs,
+		};
+
+		Some(Instance::emplace(result).into_shared())
 	}
 
 	fn iter_structures_in_radius(
-		rtree: &RTree<Structure>,
+		rtree: &mut RTree<Structure>,
 		position: Vector2,
 		radius: f32,
-	) -> impl Iterator<Item = Structure> + '_ {
+	) -> impl Iterator<Item = &mut Structure> + '_ {
 		let half_size = Vector2::ONE * radius;
 		let center = position;
 		let p1 = (center - half_size).to_rstar();
@@ -243,9 +269,9 @@ impl SpatialApi {
 
 		let radius_sq = radius * radius;
 		rtree
-			.locate_in_envelope(&aabb)
+			.locate_in_envelope_mut(&aabb)
 			.filter(move |stc| stc.position().distance_squared_to(center) < radius_sq)
-			.copied()
+			//.copied()
 	}
 
 	#[export]
@@ -335,10 +361,7 @@ impl SpatialApi {
 
 			// Update in 2 places (keep map and rtree in sync)
 			stc.set_powered(powered);
-			self.structures_by_id
-				.get_mut(&id)
-				.unwrap()
-				.set_powered(powered);
+			Self::sync_structure(*stc, &mut self.structures_by_id);
 		}
 
 		for pipe in self.pipes.iter() {
@@ -348,6 +371,12 @@ impl SpatialApi {
 		}
 
 		//println!("Done updating pipe network.\n");
+	}
+
+	// Synchronize changes from RTRee to HashMap
+	fn sync_structure(stc: Structure, structures_by_id: &mut HashMap<i64, Structure>) {
+		let stc_mut = structures_by_id.get_mut(&stc.instance_id()).unwrap();
+		*stc_mut = stc;
 	}
 
 	fn recurse_pipe_graph(
@@ -436,11 +465,6 @@ impl SpatialApi {
 		self.update_pipe_network(world);
 
 		stc.instance_id()
-	}
-
-	#[export]
-	fn get_ore_amount(&mut self, _base: &Spatial) -> u32 {
-		self.ore_amount
 	}
 }
 

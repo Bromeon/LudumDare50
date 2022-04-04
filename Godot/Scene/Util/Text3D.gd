@@ -8,7 +8,7 @@ func _ready():
 
 
 func _setString(s: String) -> void:
-	print("Set string: ", s)
+	#print("Set string: ", s)
 	$CanvasLayer/Label.text = s
 
 

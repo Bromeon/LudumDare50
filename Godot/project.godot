@@ -15,9 +15,14 @@ _global_script_classes=[ {
 "path": "res://Native/AddStructure.gdns"
 }, {
 "base": "",
-"class": "BlightUpdateResult",
+"class": "AmountsUpdated",
 "language": "NativeScript",
-"path": "res://Native/BlightUpdateResult.gdns"
+"path": "res://Native/AmountsUpdated.gdns"
+}, {
+"base": "",
+"class": "BlightUpdated",
+"language": "NativeScript",
+"path": "res://Native/BlightUpdated.gdns"
 }, {
 "base": "",
 "class": "QueryResult",
@@ -41,7 +46,8 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "AddStructure": "",
-"BlightUpdateResult": "",
+"AmountsUpdated": "",
+"BlightUpdated": "",
 "QueryResult": "",
 "SpatialApi": "",
 "Terrain": "",
@@ -93,6 +99,11 @@ left_click={
 right_click={
 "deadzone": 0.5,
 "events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":2,"pressed":false,"doubleclick":false,"script":null)
+ ]
+}
+ui_restart={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777245,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
  ]
 }
 

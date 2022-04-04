@@ -34,7 +34,8 @@ fn main() {
 			//
 			// Data classes
 			class!(AddStructure),
-			class!(BlightUpdateResult),
+			class!(BlightUpdated),
+			class!(AmountsUpdated),
 			class!(QueryResult),
 		],
 	};

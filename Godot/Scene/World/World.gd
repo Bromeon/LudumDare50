@@ -81,12 +81,28 @@ func _process(dt: float):
 		get_tree().quit()
 		return
 
+	if Input.is_action_just_pressed("ui_restart"):
+		restartGame()
+		return
+
+	$SpatialApi.update_frame_count()
 	var result = $SpatialApi.update_blight(dt)
 	for id in result.removed_pipe_ids:
 		var node = instance_from_id(id)
 		node.queue_free()
 
-	$HUD.set_ore_amount($SpatialApi.get_ore_amount())
+	var amounts = $SpatialApi.update_amounts()
+	if amounts != null:
+		$HUD.set_ore_amount(amounts.total_ore)
+
+		var remain = amounts.ore_fields_remaining_amounts
+		print("Remain: ", remain)
+		for id in remain:
+			var oreAmount = remain[id]
+			var oreObj = instance_from_id(id)
+
+			oreObj.updateAmount(oreAmount)
+
 
 	handleMouseInteraction()
 
@@ -226,3 +242,9 @@ func raycastMouseGround(localMousePos: Vector2) -> Vector3:
 
 	#print("Projected: ", projection)
 	return projection
+
+
+func restartGame():
+	var success = get_tree().reload_current_scene()
+	if success != OK:
+		printerr("Error reloading game scene")

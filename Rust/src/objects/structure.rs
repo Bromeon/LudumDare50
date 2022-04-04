@@ -18,10 +18,8 @@ pub struct Structure {
 	id: i64,
 	health: f32,
 	powered: bool,
+	amount: Option<i32>,
 }
-
-pub const IRRIGATION_CLEAN_RADIUS: f32 = 8.0;
-pub const WATER_CLEAN_RADIUS: f32 = 3.0;
 
 impl Structure {
 	pub fn new(ty: StructureType, position: Vector2, id: i64, health: f32) -> Structure {
@@ -31,6 +29,7 @@ impl Structure {
 			id,
 			health,
 			powered: Self::initially_powered(ty),
+			amount: Self::initial_amount(ty),
 		}
 	}
 
@@ -47,10 +46,10 @@ impl Structure {
 	// When this building is powered, the
 	pub fn clean_radius(&self) -> Option<f32> {
 		match self.ty {
-			StructureType::Water => Some(WATER_CLEAN_RADIUS),
+			StructureType::Water => Some(3.0),
 			StructureType::Ore => None, // Doesn't clean
 			StructureType::Pump => None,
-			StructureType::Irrigation => Some(IRRIGATION_CLEAN_RADIUS),
+			StructureType::Irrigation => Some(8.0),
 		}
 	}
 
@@ -65,22 +64,41 @@ impl Structure {
 		self.powered = powered;
 	}
 
+	/// Mines the amount, panics if non-mineable structure.
+	/// Returns the truly mined amount (if depleted)
+	#[must_use]
+	pub fn mine_amount(&mut self, amount: i32) -> i32 {
+		let remaining = self.amount.as_mut().expect("non-minable resource");
+
+		if *remaining < amount {
+			std::mem::replace(remaining, 0)
+		} else {
+			*remaining -= amount;
+			*remaining
+		}
+	}
+
 	// Getters
 	pub fn ty(&self) -> StructureType {
 		self.ty
 	}
+
 	pub fn instance_id(&self) -> i64 {
 		self.id
 	}
+
 	pub fn position(&self) -> Vector2 {
 		self.position
 	}
+
 	pub fn is_alive(&self) -> bool {
 		self.health > 0.0
 	}
+
 	pub fn is_powered(&self) -> bool {
 		self.powered
 	}
+
 	pub fn can_be_powered(&self) -> bool {
 		match self.ty {
 			StructureType::Water => false, // not toggleable
@@ -89,12 +107,27 @@ impl Structure {
 			StructureType::Irrigation => true,
 		}
 	}
+
+	pub fn amount(&self) -> i32 {
+		self.amount.expect("Queried amount of invalid type")
+	}
+
+	// Constructor helpers
 	fn initially_powered(ty: StructureType) -> bool {
 		match ty {
 			StructureType::Water => true,
 			StructureType::Ore => false,
 			StructureType::Pump => false,
 			StructureType::Irrigation => false,
+		}
+	}
+
+	fn initial_amount(ty: StructureType) -> Option<i32> {
+		match ty {
+			StructureType::Water => Some(50),
+			StructureType::Ore => Some(50),
+			StructureType::Pump => None,
+			StructureType::Irrigation => None,
 		}
 	}
 }
