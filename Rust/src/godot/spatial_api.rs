@@ -54,9 +54,17 @@ impl SpatialApi {
 
 		let mut structures = vec![];
 
-		let variants = ["Water", "Ore", "Ore", "Ore"];//, "Pump", "Irrigation"];
+		// Make sure those appear in any case in their specified amounts
+		let mut at_least_available = vec!["Water", "Ore"];
+
+		let variants = ["Water", "Ore", "Ore", "Ore"]; //, "Pump", "Irrigation"];
 		for pos in random_positions(10) {
-			let ty_name = variants.into_iter().choose(&mut thread_rng()).unwrap();
+			let ty_name = if let Some(ty) = at_least_available.pop() {
+				ty
+			} else {
+				variants.into_iter().choose(&mut thread_rng()).unwrap();
+			};
+
 			let stc = self.instance_structure(base, pos, ty_name);
 
 			structures.push(stc);
@@ -486,7 +494,7 @@ impl SpatialApi {
 
 	#[export]
 	fn can_consume_ore(&mut self, base: &Spatial, amt: i32) -> bool {
-		return self.ore_amount > amt
+		return self.ore_amount > amt;
 	}
 
 	#[export]
