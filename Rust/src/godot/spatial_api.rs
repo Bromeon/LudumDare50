@@ -335,10 +335,7 @@ impl SpatialApi {
 
 			// Update in 2 places (keep map and rtree in sync)
 			stc.set_powered(powered);
-			self.structures_by_id
-				.get_mut(&id)
-				.unwrap()
-				.set_powered(powered);
+			self.sync_structure(*stc);
 		}
 
 		for pipe in self.pipes.iter() {
@@ -348,6 +345,12 @@ impl SpatialApi {
 		}
 
 		//println!("Done updating pipe network.\n");
+	}
+
+	// Synchronize changes from RTRee to HashMap
+	fn sync_structure(&mut self, stc: Structure) {
+		let stc_mut = self.structures_by_id.get_mut(&stc.instance_id()).unwrap();
+		*stc_mut = stc;
 	}
 
 	fn recurse_pipe_graph(
