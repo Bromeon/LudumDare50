@@ -48,8 +48,8 @@ impl Structure {
 	pub fn clean_radius(&self) -> Option<f32> {
 		match self.ty {
 			StructureType::Water => Some(WATER_CLEAN_RADIUS),
-			StructureType::Ore =>None, // Doesn't clean
-			StructureType::Pump =>None,
+			StructureType::Ore => None, // Doesn't clean
+			StructureType::Pump => None,
 			StructureType::Irrigation => Some(IRRIGATION_CLEAN_RADIUS),
 		}
 	}

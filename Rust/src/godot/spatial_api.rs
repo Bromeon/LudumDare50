@@ -161,7 +161,9 @@ impl SpatialApi {
 				if let Some(radius) = stc.clean_radius() {
 					terrain.clean_circle(stc.position().to_3d(), radius);
 				}
-			} else if let Some(damage_radius) = stc.damage_radius() {
+			}
+
+			if let Some(damage_radius) = stc.damage_radius() {
 				let blight =
 					terrain.get_average_blight_in_circle(stc.position().to_3d(), damage_radius);
 
