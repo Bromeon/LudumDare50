@@ -1,16 +1,7 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://Scene/Util/Text3D.gd" type="Script" id=1]
-[ext_resource path="res://Assets/Fonts/Steamwreck.otf" type="DynamicFontData" id=2]
-
-[sub_resource type="DynamicFont" id=1]
-size = 32
-outline_size = 3
-outline_color = Color( 0.211765, 0.176471, 0.176471, 1 )
-font_data = ExtResource( 2 )
-
-[sub_resource type="Theme" id=2]
-default_font = SubResource( 1 )
+[ext_resource path="res://Assets/TextTheme.tres" type="Theme" id=2]
 
 [node name="Text3D" type="Spatial"]
 script = ExtResource( 1 )
@@ -24,10 +15,8 @@ margin_right = 64.0
 margin_bottom = 64.0
 
 [node name="Label" type="Label" parent="CanvasLayer/Control"]
-margin_left = -40.0
-margin_top = -20.0
-margin_right = 40.0
-margin_bottom = 21.0
-theme = SubResource( 2 )
+margin_right = 130.0
+margin_bottom = 130.0
+theme = ExtResource( 2 )
 align = 1
 valign = 1
