@@ -2,9 +2,6 @@ use gdnative::prelude::*;
 
 #[derive(NativeClass, Debug, Default)]
 pub struct BlightUpdateResult {
-	#[property]
-	pub collected_ore: u32,
-
 	#[property(get = "Self::get_removed_pipe_ids")]
 	pub removed_pipe_ids: Vec<i64>,
 }

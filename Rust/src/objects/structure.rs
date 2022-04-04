@@ -18,6 +18,7 @@ pub struct Structure {
 	id: i64,
 	health: f32,
 	powered: bool,
+	amount: Option<u32>,
 }
 
 pub const IRRIGATION_CLEAN_RADIUS: f32 = 8.0;
@@ -31,6 +32,7 @@ impl Structure {
 			id,
 			health,
 			powered: Self::initially_powered(ty),
+			amount: Self::initial_amount(ty),
 		}
 	}
 
@@ -69,18 +71,23 @@ impl Structure {
 	pub fn ty(&self) -> StructureType {
 		self.ty
 	}
+
 	pub fn instance_id(&self) -> i64 {
 		self.id
 	}
+
 	pub fn position(&self) -> Vector2 {
 		self.position
 	}
+
 	pub fn is_alive(&self) -> bool {
 		self.health > 0.0
 	}
+
 	pub fn is_powered(&self) -> bool {
 		self.powered
 	}
+
 	pub fn can_be_powered(&self) -> bool {
 		match self.ty {
 			StructureType::Water => false, // not toggleable
@@ -89,12 +96,27 @@ impl Structure {
 			StructureType::Irrigation => true,
 		}
 	}
+
+	pub fn amount(&self) -> Option<u32> {
+		self.amount
+	}
+
+	// Constructor helpers
 	fn initially_powered(ty: StructureType) -> bool {
 		match ty {
 			StructureType::Water => true,
 			StructureType::Ore => false,
 			StructureType::Pump => false,
 			StructureType::Irrigation => false,
+		}
+	}
+
+	fn initial_amount(ty: StructureType) -> Option<u32> {
+		match ty {
+			StructureType::Water => Some(50),
+			StructureType::Ore => Some(50),
+			StructureType::Pump => None,
+			StructureType::Irrigation => None,
 		}
 	}
 }

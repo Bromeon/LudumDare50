@@ -108,9 +108,14 @@ impl SpatialApi {
 		(instanced, id)
 	}
 
+	// Separate function to avoid reorder bugs in GDScript
+	#[export]
+	fn update_frame_count(&mut self, _base: &Spatial) {
+		self.frame_count += 1;
+	}
+
 	#[export]
 	fn update_blight(&mut self, base: &Spatial, dt: f32) -> Instance<BlightUpdateResult> {
-		self.frame_count += 1;
 		let result = if let Some(inst) = self.terrain.as_mut() {
 			let result = inst
 				.map_mut(|terrain, _| {
@@ -152,7 +157,6 @@ impl SpatialApi {
 		frame_count: usize,
 	) -> BlightUpdateResult {
 		let mut structures_to_remove = vec![];
-		let mut ores = vec![];
 
 		for stc in rtree.iter_mut() {
 			profiling::scope!("blight");
@@ -171,25 +175,8 @@ impl SpatialApi {
 				stc.deal_damage(damage);
 			}
 
-			if frame_count % MINER_TICK_FREQ == 0 && matches!(stc.ty(), StructureType::Ore) {
-				ores.push(*stc);
-			}
-
 			if !stc.is_alive() {
 				structures_to_remove.push(*stc);
-			}
-		}
-
-		let mut collected_ore = 0;
-		if frame_count % MINER_TICK_FREQ == 0 {
-			for ore in ores {
-				// If there's at least one irrigation covering this ore, then it
-				// will collect ore for the frame.
-				if Self::iter_structures_in_radius(rtree, ore.position(), IRRIGATION_CLEAN_RADIUS)
-					.any(|other| matches!(other.ty(), StructureType::Ore))
-				{
-					collected_ore += ORE_PER_COLLECTION;
-				}
 			}
 		}
 
@@ -222,9 +209,32 @@ impl SpatialApi {
 			godot_print!("Removed pipe IDs: {:?}", removed_pipe_ids);
 		}
 
-		BlightUpdateResult {
-			collected_ore,
-			removed_pipe_ids,
+		BlightUpdateResult { removed_pipe_ids }
+	}
+
+	#[export]
+	fn update_amounts(&mut self, _base: &Spatial, dt: f32) {
+		for stc in rtree.iter() {
+			if frame_count % MINER_TICK_FREQ != 0 || !matches!(stc.ty(), StructureType::Ore) {
+				continue;
+			}
+
+			let ore = stc;
+
+			let mut collected_ore = 0;
+			if self.frame_count % MINER_TICK_FREQ == 0 {
+				// If there's at least one irrigation covering this ore, then it
+				// will collect ore for the frame.
+				if Self::iter_structures_in_radius(
+					&self.rtree,
+					ore.position(),
+					IRRIGATION_CLEAN_RADIUS,
+				)
+				.any(|other| matches!(other.ty(), StructureType::Ore))
+				{
+					collected_ore += ORE_PER_COLLECTION;
+				}
+			}
 		}
 	}
 
