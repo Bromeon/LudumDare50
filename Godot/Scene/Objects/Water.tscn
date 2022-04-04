@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Scene/Objects/Structure.gd" type="Script" id=1]
+[ext_resource path="res://Scene/Objects/Water2.tscn" type="PackedScene" id=2]
 
 [sub_resource type="QuadMesh" id=3]
 size = Vector2( 4, 4 )
@@ -17,6 +18,7 @@ baseText = "Water"
 
 [node name="Mesh" type="MeshInstance" parent="Core"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.06, 0 )
+visible = false
 mesh = SubResource( 3 )
 skeleton = NodePath("../..")
 material/0 = null
@@ -24,3 +26,6 @@ material/0 = null
 [node name="CollisionShape" type="CollisionShape" parent="Core"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.06, 0 )
 shape = SubResource( 4 )
+
+[node name="Water" parent="Core" instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51303, 0 )

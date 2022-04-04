@@ -72,10 +72,6 @@ transform = Transform( 1, 0, 0, 0, 0.355792, 0.934565, 0, -0.934565, 0.355792, 0
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource( 6 )
 
-[node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.0423464, 0.999103, 0, -0.999103, 0.0423464, -1.19209e-07, 0.13098, 2.31921 )
-shadow_enabled = true
-
 [node name="Terrain" type="Spatial" parent="."]
 script = ExtResource( 3 )
 
@@ -135,3 +131,11 @@ text = "Ore amount: "
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Music"]
 stream = ExtResource( 19 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.0423464, 0.999103, 0, -0.999103, 0.0423464, -1.19209e-07, 0.13098, 2.31921 )
+light_energy = 4.0
+shadow_enabled = true
+
+[node name="DirectionalLight2" type="DirectionalLight" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.521054, 0.853524, 0, -0.853524, 0.521054, 0, 0, 0 )
