@@ -105,6 +105,8 @@ mesh = SubResource( 10 )
 skeleton = NodePath("../SpatialApi")
 material/0 = null
 
+[node name="SceneUi" type="Spatial" parent="."]
+
 [node name="Zeppelin" parent="." instance=ExtResource( 4 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.97746, 0 )
 

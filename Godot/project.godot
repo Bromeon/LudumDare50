@@ -29,6 +29,11 @@ _global_script_classes=[ {
 "language": "NativeScript",
 "path": "res://Native/QueryResult.gdns"
 }, {
+"base": "Spatial",
+"class": "RisingText",
+"language": "GDScript",
+"path": "res://Scene/Util/RisingText.gd"
+}, {
 "base": "",
 "class": "SpatialApi",
 "language": "NativeScript",
@@ -38,6 +43,11 @@ _global_script_classes=[ {
 "class": "Terrain",
 "language": "NativeScript",
 "path": "res://Native/Terrain.gdns"
+}, {
+"base": "Spatial",
+"class": "Text3D",
+"language": "GDScript",
+"path": "res://Scene/Util/Text3D.gd"
 }, {
 "base": "",
 "class": "Zeppelin",
@@ -49,8 +59,10 @@ _global_script_class_icons={
 "AmountsUpdated": "",
 "BlightUpdated": "",
 "QueryResult": "",
+"RisingText": "",
 "SpatialApi": "",
 "Terrain": "",
+"Text3D": "",
 "Zeppelin": ""
 }
 

@@ -2,6 +2,7 @@ extends Spatial
 
 const SpatialApi = preload("res://Native/SpatialApi.gdns")
 const AddStructure = preload("res://Native/AddStructure.gdns")
+const RisingText = preload("res://Scene/Util/RisingText.tscn")
 
 
 const RAY_LENGTH = 1000.0
@@ -102,6 +103,19 @@ func _process(dt: float):
 			var oreObj = instance_from_id(id)
 
 			oreObj.updateAmount(oreAmount)
+
+		for i in amounts.animated_positions.size():
+			var amount = amounts.animated_diffs[i]
+			var pos = amounts.animated_positions[i]
+			var pos3d = Vector3(pos.x, 2, pos.y)
+
+			var rt = RisingText.instance()
+			rt.init(amount)
+			rt.translate(pos3d)
+
+			$SceneUi.add_child(rt)
+
+
 
 
 	handleMouseInteraction()

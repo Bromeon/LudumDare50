@@ -1,4 +1,5 @@
 extends Spatial
+class_name Text3D
 
 # for later: https://www.youtube.com/watch?v=ilBCnt_WE58
 
@@ -32,4 +33,4 @@ func _process(_delta):
 	label.rect_position = pos2d - label.rect_size / 2.0
 	label.rect_scale = factor * Vector2.ONE
 
-	print("rect scale: ", label.rect_scale)
+	#print("rect scale: ", label.rect_scale)

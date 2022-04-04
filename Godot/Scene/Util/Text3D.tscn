@@ -5,8 +5,6 @@
 
 [node name="Text3D" type="Spatial"]
 script = ExtResource( 1 )
-text = null
-textColor = null
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
