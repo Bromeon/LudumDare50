@@ -1,0 +1,57 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://Models/Zeppelin.glb" type="PackedScene" id=1]
+[ext_resource path="res://Scene/Objects/ZeppelinAnimated.gd" type="Script" id=2]
+[ext_resource path="res://Assets/Shader/Matcap.gdshader" type="Shader" id=3]
+[ext_resource path="res://Textures/Grunge.png" type="Texture" id=4]
+[ext_resource path="res://Textures/Matcaps/Balloon.png" type="Texture" id=5]
+
+[sub_resource type="ShaderMaterial" id=1]
+shader = ExtResource( 3 )
+shader_param/tint = Color( 0.886275, 0.858824, 0.835294, 1 )
+shader_param/grunge_scale = 0.515
+shader_param/grunge_amount = 0.362
+shader_param/Matcap = ExtResource( 5 )
+shader_param/Grunge = ExtResource( 4 )
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = ExtResource( 3 )
+shader_param/tint = Color( 0.352941, 0.34902, 0.411765, 1 )
+shader_param/grunge_scale = 0.515
+shader_param/grunge_amount = 0.362
+shader_param/Matcap = ExtResource( 5 )
+shader_param/Grunge = ExtResource( 4 )
+
+[sub_resource type="ShaderMaterial" id=3]
+shader = ExtResource( 3 )
+shader_param/tint = Color( 1, 0.819608, 0, 1 )
+shader_param/grunge_scale = 0.515
+shader_param/grunge_amount = 0.362
+shader_param/Matcap = ExtResource( 5 )
+shader_param/Grunge = ExtResource( 4 )
+
+[sub_resource type="ShaderMaterial" id=4]
+shader = ExtResource( 3 )
+shader_param/tint = Color( 0.509804, 0.278431, 0.294118, 1 )
+shader_param/grunge_scale = 0.515
+shader_param/grunge_amount = 0.362
+shader_param/Matcap = ExtResource( 5 )
+shader_param/Grunge = ExtResource( 4 )
+
+[node name="Zeppelin" instance=ExtResource( 1 )]
+script = ExtResource( 2 )
+
+[node name="Balloon" parent="." index="0"]
+material/0 = SubResource( 1 )
+
+[node name="Cabin" parent="." index="1"]
+material/0 = SubResource( 2 )
+
+[node name="Propeller Right" parent="." index="2"]
+material/0 = SubResource( 3 )
+
+[node name="Propeller Left" parent="." index="3"]
+material/0 = SubResource( 3 )
+
+[node name="Balloon002" parent="." index="4"]
+material/0 = SubResource( 4 )

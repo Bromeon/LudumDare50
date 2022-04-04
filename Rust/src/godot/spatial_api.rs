@@ -596,7 +596,7 @@ impl SpatialApi {
 
 	#[export]
 	fn can_consume_ore(&mut self, _base: &Spatial, amt: i32) -> bool {
-		return self.ore_amount > amt;
+		self.ore_amount >= amt
 	}
 
 	#[export]
