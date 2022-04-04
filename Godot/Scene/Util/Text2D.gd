@@ -8,22 +8,26 @@ export(Color) var textColor setget _setColor
 
 onready var label = $CanvasLayer/CenterContainer/Label
 
-func _ready():
-	pass
-	#$Node2D.material = textMaterial
+var lateText: String
+var lateColor: Color
+var init = false
+
 
 func _setString(s: String) -> void:
-	#print("Set string: ", s)
-
 	# Note: cannot use onready var if set via editor
-	$CanvasLayer/CenterContainer/Label.text = s
-
+	lateText = s
+	init = false
 
 func _setColor(c: Color) -> void:
-	$CanvasLayer/CenterContainer.modulate = c
-
+	lateColor = c
+	init = false
 
 func _process(_delta):
+	if !init:
+		$CanvasLayer/CenterContainer/Label.text = lateText
+		$CanvasLayer/CenterContainer.modulate = lateColor
+		init = true
+
 	var textPos = get_global_transform().origin
 	var cam = get_viewport().get_camera()
 	var pos2d = cam.unproject_position(textPos)
