@@ -226,14 +226,15 @@ impl SpatialApi {
 			}
 
 			let surrounding = Self::iter_structures_in_radius(
-				&self.rtree,
+				&mut self.rtree,
 				irrigator.position(),
 				irrigator.clean_radius().unwrap(),
 			);
 
 			for stc in surrounding {
 				if stc.ty() == StructureType::Ore {
-					self.ore_amount += ORE_PER_COLLECTION;
+					let mined = stc.mine_amount(ORE_PER_COLLECTION);
+					self.ore_amount += mined;
 
 					animated_positions.push(stc.position());
 					animated_diffs.push(-ORE_PER_COLLECTION);
@@ -254,10 +255,10 @@ impl SpatialApi {
 	}
 
 	fn iter_structures_in_radius(
-		rtree: &RTree<Structure>,
+		rtree: &mut RTree<Structure>,
 		position: Vector2,
 		radius: f32,
-	) -> impl Iterator<Item = Structure> + '_ {
+	) -> impl Iterator<Item = &mut Structure> + '_ {
 		let half_size = Vector2::ONE * radius;
 		let center = position;
 		let p1 = (center - half_size).to_rstar();
@@ -268,9 +269,9 @@ impl SpatialApi {
 
 		let radius_sq = radius * radius;
 		rtree
-			.locate_in_envelope(&aabb)
+			.locate_in_envelope_mut(&aabb)
 			.filter(move |stc| stc.position().distance_squared_to(center) < radius_sq)
-			.copied()
+			//.copied()
 	}
 
 	#[export]

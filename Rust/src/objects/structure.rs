@@ -18,7 +18,7 @@ pub struct Structure {
 	id: i64,
 	health: f32,
 	powered: bool,
-	amount: Option<u32>,
+	amount: Option<i32>,
 }
 
 impl Structure {
@@ -64,6 +64,20 @@ impl Structure {
 		self.powered = powered;
 	}
 
+	/// Mines the amount, panics if non-mineable structure.
+	/// Returns the truly mined amount (if depleted)
+	#[must_use]
+	pub fn mine_amount(&mut self, amount: i32) -> i32 {
+		let remaining = self.amount.as_mut().expect("non-minable resource");
+
+		if *remaining < amount {
+			std::mem::replace(remaining, 0)
+		} else {
+			*remaining -= amount;
+			*remaining
+		}
+	}
+
 	// Getters
 	pub fn ty(&self) -> StructureType {
 		self.ty
@@ -94,7 +108,7 @@ impl Structure {
 		}
 	}
 
-	pub fn amount(&self) -> u32 {
+	pub fn amount(&self) -> i32 {
 		self.amount.expect("Queried amount of invalid type")
 	}
 
@@ -108,7 +122,7 @@ impl Structure {
 		}
 	}
 
-	fn initial_amount(ty: StructureType) -> Option<u32> {
+	fn initial_amount(ty: StructureType) -> Option<i32> {
 		match ty {
 			StructureType::Water => Some(50),
 			StructureType::Ore => Some(50),
