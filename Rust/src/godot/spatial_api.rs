@@ -43,7 +43,7 @@ impl SpatialApi {
 			pipes: Vec::new(),
 			terrain: None,
 			scenes: Dictionary::new_shared(),
-			ore_amount: 0,
+			ore_amount: 100,
 			frame_count: 0,
 		}
 	}
@@ -482,6 +482,16 @@ impl SpatialApi {
 		self.update_pipe_network(world);
 
 		stc.instance_id()
+	}
+
+	#[export]
+	fn can_consume_ore(&mut self, base: &Spatial, amt: i32) -> bool {
+		return self.ore_amount > amt
+	}
+
+	#[export]
+	fn consume_ore(&mut self, base: &Spatial, amt: i32) {
+		self.ore_amount = (self.ore_amount - amt).max(0)
 	}
 }
 
