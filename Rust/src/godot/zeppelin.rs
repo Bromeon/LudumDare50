@@ -11,6 +11,9 @@ pub struct Zeppelin {
 	/// An extra spatial node so we can rotate the zeppelin mesh, consisting of
 	/// multiple meshes, independently.
 	pub pivot: Option<Ref<Spatial>>,
+	/// The animated zeppelin model. We store a reference to it so we can set
+	/// the propeller animation
+	pub animated: Option<Ref<Node>>,
 	pub acceleration: Vector2,
 	pub velocity: Vector2,
 	pub look_dir: Vector2,
@@ -41,6 +44,7 @@ impl Zeppelin {
 			acc_factor: 2.0,
 			cam_angle: Vector3::new(0.0, -7.0, -4.0),
 			cam_acc_factor: 3.0,
+			animated: None,
 		}
 	}
 
@@ -48,6 +52,7 @@ impl Zeppelin {
 	fn _ready(&mut self, base: &Spatial) {
 		self.camera = Some(get_node!(base, "../Camera", Camera));
 		self.pivot = Some(get_node!(base, "Pivot", Spatial));
+		self.animated = Some(get_node!(base, "Pivot/Zeppelin", Node));
 	}
 
 	fn process_input(&mut self) {
@@ -74,6 +79,9 @@ impl Zeppelin {
 		self.velocity += self.acceleration * dt;
 		self.velocity *= self.drag;
 		base.translate(self.velocity.to_3d() * dt);
+		self.animated
+			.unwrap()
+			.call("setVelTarget", &[self.velocity.length().to_variant()]);
 	}
 
 	fn rotate_pivot(&mut self, dt: f32) {
