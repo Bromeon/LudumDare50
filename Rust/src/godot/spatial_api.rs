@@ -210,7 +210,7 @@ impl SpatialApi {
 	) -> Vec<i64> {
 		// Remove destroyed structures
 		let mut removed_pipe_ids = vec![];
-		for elem in structures_to_remove .iter() {
+		for elem in structures_to_remove.iter() {
 			let id_to_remove = elem.instance_id();
 
 			unsafe {
@@ -674,8 +674,13 @@ impl SpatialApi {
 			let mut info = format!("{}", stc.ty_name());
 			if stc.can_be_powered() {
 				if stc.is_powered() {
-					info += " (powered)";
+					info += " (powered,";
+				} else {
+					info += " (unpowered,";
 				}
+			}
+			if let Some(cost) = stc.build_cost() {
+				info += &format!(" cost {cost})");
 			}
 
 			if !minimal {

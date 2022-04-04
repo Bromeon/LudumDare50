@@ -9,8 +9,9 @@ const RAY_LENGTH = 1000.0
 
 const BUILD_RADIUS = 6.0
 
+# FIXME duplicated in structure.rs
 const IRRIGATION_COST = 50
-const PUMP_COST = 25
+const PUMP_COST = 15
 
 var matDefault: SpatialMaterial
 var matHighlighted: SpatialMaterial

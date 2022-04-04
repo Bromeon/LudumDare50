@@ -129,6 +129,16 @@ impl Structure {
 		self.powered
 	}
 
+	// FIXME duplicated in World.gd
+	pub fn build_cost(&self) -> Option<i32> {
+		match self.ty {
+			StructureType::Water => None, // not toggleable
+			StructureType::Ore => None,
+			StructureType::Pump => Some(15),
+			StructureType::Irrigation => Some(50),
+		}
+	}
+
 	pub fn can_be_powered(&self) -> bool {
 		match self.ty {
 			StructureType::Water => false, // not toggleable
