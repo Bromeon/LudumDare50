@@ -1,5 +1,5 @@
 extends Spatial
-class_name Text3D
+#class_name Text2D
 
 # for later: https://www.youtube.com/watch?v=ilBCnt_WE58
 

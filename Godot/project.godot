@@ -44,11 +44,6 @@ _global_script_classes=[ {
 "language": "NativeScript",
 "path": "res://Native/Terrain.gdns"
 }, {
-"base": "Spatial",
-"class": "Text3D",
-"language": "GDScript",
-"path": "res://Scene/Util/Text3D.gd"
-}, {
 "base": "",
 "class": "Zeppelin",
 "language": "NativeScript",
@@ -62,7 +57,6 @@ _global_script_class_icons={
 "RisingText": "",
 "SpatialApi": "",
 "Terrain": "",
-"Text3D": "",
 "Zeppelin": ""
 }
 

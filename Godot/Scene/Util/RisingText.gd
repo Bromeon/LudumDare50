@@ -18,8 +18,8 @@ func init(number: int):
 		usedColor = negativeColor
 
 	print("children: ", get_children())
-	$Text3D.text = str(num)
-	$Text3D.textColor = usedColor
+	$Text2D.text = str(num)
+	$Text2D.textColor = usedColor
 
 func _ready():
 	pass
