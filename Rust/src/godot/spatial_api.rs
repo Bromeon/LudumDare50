@@ -201,6 +201,12 @@ impl SpatialApi {
 			rtree.remove(elem);
 			structures_by_id.remove(&elem.instance_id());
 
+			unsafe {
+				autoload::<Node>("Sfx")
+					.unwrap()
+					.call("stopMachineSound", &[elem.instance_id().to_variant()]);
+			}
+
 			let node_id = elem.instance_id();
 			let node = unsafe { Node::from_instance_id(node_id) };
 			node.queue_free();
@@ -218,6 +224,10 @@ impl SpatialApi {
 					i += 1;
 				}
 			}
+		}
+
+		if !structures_to_remove.is_empty() {
+			unsafe { autoload::<Node>("Sfx").unwrap().call("destroy", &[]) };
 		}
 
 		if !removed_pipe_ids.is_empty() {
@@ -268,7 +278,7 @@ impl SpatialApi {
 		remaining_resource_amounts: &Dictionary<Unique>,
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
-		animated_strings :&mut PoolArray<GodotString>,
+		animated_strings: &mut PoolArray<GodotString>,
 	) -> bool {
 		if (self.frame_count + WATER_TICK_OFFSET) % WATER_TICK_FREQ != 0 {
 			return false;
@@ -341,7 +351,7 @@ impl SpatialApi {
 		remaining_resource_amounts: &Dictionary<Unique>,
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
-		animated_strings :&mut PoolArray<GodotString>,
+		animated_strings: &mut PoolArray<GodotString>,
 	) -> bool {
 		if self.frame_count % MINER_TICK_FREQ != 0 {
 			return false;
