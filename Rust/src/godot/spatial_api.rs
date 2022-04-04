@@ -152,8 +152,7 @@ impl SpatialApi {
 		};
 
 		if !result.removed_pipe_ids.is_empty() {
-			let world = base.get_parent().unwrap();
-			self.update_pipe_network(world);
+			self.update_pipe_network(base);
 		}
 
 		Instance::emplace(result).into_shared()
@@ -228,7 +227,7 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn update_amounts(&mut self, _base: &Spatial) -> Option<Instance<AmountsUpdated>> {
+	fn update_amounts(&mut self, base: &Spatial) -> Option<Instance<AmountsUpdated>> {
 		let remaining_resource_amounts = Dictionary::new();
 		let mut animated_positions = Vector2Array::new();
 		let mut animated_diffs = Int32Array::new();
@@ -247,6 +246,15 @@ impl SpatialApi {
 			&mut animated_diffs,
 			&mut animated_strings,
 		);
+
+		let updated_water = match updated_water {
+			WaterResult::NothingToDo => false,
+			WaterResult::WaterConsumed => true,
+			WaterResult::WaterDepleted => {
+				self.update_pipe_network(base);
+				true
+			}
+		};
 
 		if updated_mines || updated_water {
 			let result = AmountsUpdated {
@@ -268,14 +276,16 @@ impl SpatialApi {
 		remaining_resource_amounts: &Dictionary<Unique>,
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
-		animated_strings :&mut PoolArray<GodotString>,
-	) -> bool {
+		animated_strings: &mut PoolArray<GodotString>,
+	) -> WaterResult {
 		if (self.frame_count + WATER_TICK_OFFSET) % WATER_TICK_FREQ != 0 {
-			return false;
+			return WaterResult::NothingToDo;
 		}
 
 		// Changed in RTree, needs HashMap update
 		let mut structures_to_sync = vec![];
+
+		let mut result = WaterResult::WaterConsumed;
 
 		// Trace back each irrigator to its water source
 		for irrigator in self
@@ -312,6 +322,8 @@ impl SpatialApi {
 				animated_positions.push(irrigator.position());
 				animated_diffs.push(water_consumed);
 				animated_strings.push("Water".into());
+			} else {
+				result = WaterResult::WaterDepleted;
 			}
 		}
 
@@ -329,7 +341,7 @@ impl SpatialApi {
 			remaining_resource_amounts.insert(water.instance_id(), water.amount());
 		}
 
-		true
+		result
 	}
 
 	fn is_powered_irrigator(stc: &Structure) -> bool {
@@ -341,7 +353,7 @@ impl SpatialApi {
 		remaining_resource_amounts: &Dictionary<Unique>,
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
-		animated_strings :&mut PoolArray<GodotString>,
+		animated_strings: &mut PoolArray<GodotString>,
 	) -> bool {
 		if self.frame_count % MINER_TICK_FREQ != 0 {
 			return false;
@@ -440,7 +452,7 @@ impl SpatialApi {
 			.collect()
 	}
 
-	fn update_pipe_network(&mut self, world: Ref<Node>) {
+	fn update_pipe_network(&mut self, base: &Spatial) {
 		// Note: of course, we could only update from the changed pipes, but this is a more general approach
 		println!("Update pipe network...");
 
@@ -485,6 +497,8 @@ impl SpatialApi {
 
 		// Apply changes to every structure
 		self.irrigators_by_powering_water.clear();
+
+		let world = base.get_parent().unwrap();
 		for stc in self.rtree.iter_mut() {
 			let id = stc.instance_id();
 			let powering_water = powered_structures.get(&id);
@@ -603,8 +617,7 @@ impl SpatialApi {
 		self.structures_by_id.insert(stc.instance_id(), stc);
 		self.rtree.insert(stc);
 
-		let world = base.get_parent().unwrap();
-		self.update_pipe_network(world);
+		self.update_pipe_network(base);
 
 		stc.instance_id()
 	}
@@ -636,3 +649,10 @@ fn random_positions(n: usize) -> Vec<Vector2> {
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------
+
+enum WaterResult {
+	NothingToDo,
+	WaterConsumed,
+	/// If at least one water field depletes, need to recompute pipes
+	WaterDepleted,
+}
