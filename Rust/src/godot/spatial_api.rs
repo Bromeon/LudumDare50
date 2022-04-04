@@ -14,9 +14,14 @@ const STRUCTURE_HEALTH: f32 = 100.0;
 
 /// The amount of collected ore per simulation tick when there's an active miner
 const ORE_PER_COLLECTION: i32 = 5;
+
+/// The amount of water used by irrigators each second
+const WATER_SPENT_PER_SECOND: i32 = 5;
+
 /// The frequency, in number of physics frames, after which active miners will
 /// collect ore
 const MINER_TICK_FREQ: usize = 60 * 2;
+const WATER_TICK_FREQ: usize = 60;
 
 #[derive(NativeClass)]
 #[inherit(Spatial)]
@@ -220,13 +225,45 @@ impl SpatialApi {
 
 	#[export]
 	fn update_amounts(&mut self, _base: &Spatial) -> Option<Instance<AmountsUpdated>> {
-		if self.frame_count % MINER_TICK_FREQ != 0 {
-			return None;
-		}
-
 		let remaining_resource_amounts = Dictionary::new();
 		let mut animated_positions = Vector2Array::new();
 		let mut animated_diffs = Int32Array::new();
+
+		let updated_water = self.update_water_amounts(
+			&remaining_resource_amounts,
+			&mut animated_positions,
+			&mut animated_diffs,
+		);
+
+		let updated_mines = self.update_mining_amounts(
+			&remaining_resource_amounts,
+			&mut animated_positions,
+			&mut animated_diffs,
+		);
+
+		if updated_mines || updated_water {
+			let result = AmountsUpdated {
+				total_ore: self.ore_amount,
+				remaining_resource_amounts: remaining_resource_amounts.into_shared(),
+				animated_positions,
+				animated_diffs,
+			};
+
+			Some(Instance::emplace(result).into_shared())
+		} else {
+			None
+		}
+	}
+
+	fn update_water_amounts(
+		&mut self,
+		remaining_resource_amounts: &Dictionary<Unique>,
+		animated_positions: &mut PoolArray<Vector2>,
+		animated_diffs: &mut PoolArray<i32>,
+	) -> bool {
+		if self.frame_count % WATER_TICK_FREQ != 0 {
+			return false;
+		}
 
 		// Iterate connected waters
 		for water in self.structures_by_id.values() {
@@ -235,6 +272,19 @@ impl SpatialApi {
 			}
 
 			remaining_resource_amounts.insert(water.instance_id(), water.amount());
+		}
+
+		true
+	}
+
+	fn update_mining_amounts(
+		&mut self,
+		remaining_resource_amounts: &Dictionary<Unique>,
+		animated_positions: &mut PoolArray<Vector2>,
+		animated_diffs: &mut PoolArray<i32>,
+	) -> bool {
+		if self.frame_count % MINER_TICK_FREQ != 0 {
+			return false;
 		}
 
 		// Iterate irrigators
@@ -269,14 +319,7 @@ impl SpatialApi {
 			}
 		}
 
-		let result = AmountsUpdated {
-			total_ore: self.ore_amount,
-			remaining_resource_amounts: remaining_resource_amounts.into_shared(),
-			animated_positions,
-			animated_diffs,
-		};
-
-		Some(Instance::emplace(result).into_shared())
+		true
 	}
 
 	fn iter_structures_in_radius(
