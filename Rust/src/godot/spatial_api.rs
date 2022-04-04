@@ -3,7 +3,7 @@ use rand::prelude::*;
 use rstar::{RTree, AABB};
 //use std::collections::HashMap;
 
-use crate::godot::Terrain;
+use crate::godot::{BlightUpdateResult, Terrain};
 use crate::objects::{Pipe, Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
 use crate::{Vector2Ext, Vector3Ext};
 
@@ -106,10 +106,10 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn update_blight_impact(&mut self, _base: &Spatial, dt: f32) {
+	fn update_blight(&mut self, _base: &Spatial, dt: f32) -> Instance<BlightUpdateResult> {
 		self.frame_count += 1;
-		if let Some(inst) = self.terrain.as_mut() {
-			let collected_ore = inst
+		let result = if let Some(inst) = self.terrain.as_mut() {
+			let result = inst
 				.map_mut(|terrain, _| {
 					Self::update_blight_impl(
 						&mut self.rtree,
@@ -120,8 +120,15 @@ impl SpatialApi {
 					)
 				})
 				.unwrap();
-			self.ore_amount += collected_ore;
-		}
+
+			self.ore_amount += result.collected_ore;
+
+			result
+		} else {
+			BlightUpdateResult::default()
+		};
+
+		Instance::emplace(result).into_shared()
 	}
 
 	/// Returns the amount of ore collected
@@ -133,7 +140,7 @@ impl SpatialApi {
 		dt: f32,
 		terrain: &mut Terrain,
 		frame_count: usize,
-	) -> u32 {
+	) -> BlightUpdateResult {
 		let mut structures_to_remove = vec![];
 		let mut ores = vec![];
 
@@ -159,7 +166,7 @@ impl SpatialApi {
 			}
 		}
 
-		let mut ore_collected = 0;
+		let mut collected_ore = 0;
 		if frame_count % MINER_TICK_FREQ == 0 {
 			for ore in ores {
 				// If there's at least one irrigation covering this ore, then it
@@ -167,7 +174,7 @@ impl SpatialApi {
 				if Self::iter_structures_in_radius(rtree, ore.position(), IRRIGATION_CLEAN_RADIUS)
 					.any(|other| matches!(other.ty(), StructureType::Ore))
 				{
-					ore_collected += ORE_PER_COLLECTION;
+					collected_ore += ORE_PER_COLLECTION;
 				}
 			}
 		}
@@ -195,7 +202,10 @@ impl SpatialApi {
 			}
 		}
 
-		ore_collected
+		BlightUpdateResult {
+			collected_ore,
+			removed_pipe_ids,
+		}
 	}
 
 	fn iter_structures_in_radius(
