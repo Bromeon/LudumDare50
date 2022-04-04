@@ -19,7 +19,7 @@ var matPowered: SpatialMaterial
 var lastHoveredObj: Spatial = null
 var selectedObj: Spatial = null
 
-onready var ghostStc: Spatial = $Ghosts/Pump
+onready var ghostsStc: Array = [$Ghosts/Pump, $Ghosts/Irrigation]
 onready var ghostPipe: Spatial = $Ghosts/Pipe
 
 
@@ -43,10 +43,11 @@ func setPowered(instanceId: int, powered: bool) -> void:
 	#print("setPowered: ", instanceId, " powered=", powered)
 	var obj: Spatial = instance_from_id(instanceId)
 
-	if powered:
-		obj.applyMaterial(matPowered)
-	else:
-		obj.applyMaterial(matDefault)
+	obj.setPowered(powered);
+	#if powered:
+		#obj.applyMaterial(matPowered)
+	#else:
+		#obj.applyMaterial(matDefault)
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------
@@ -117,8 +118,17 @@ func _process(dt: float):
 
 	handleMouseInteraction()
 
+var placedStructureType = "Pump"
 
-func handleMouseInteraction():
+func _input(event):
+	if event is InputEventMouseButton:
+		if event.is_pressed():
+			if event.button_index == BUTTON_WHEEL_UP or event.button_index == BUTTON_WHEEL_DOWN:
+				placedStructureType = "Pump" if placedStructureType == "Irrigation" else "Irrigation"
+				print(placedStructureType)
+		   
+
+func handleMouseInteraction():      
 	# Invalidate deleted
 	if lastHoveredObj != null && !is_instance_valid(lastHoveredObj):
 		lastHoveredObj = null
@@ -168,7 +178,7 @@ func handleMouseInteraction():
 			if groundPosInRange != null:
 				var add = AddStructure.new()
 				add.position = groundPosInRange
-				add.structure_ty = "Pump"
+				add.structure_ty = placedStructureType
 				add.pipe_from_obj = selectedObj
 
 				var id = $SpatialApi.add_structure(add)
@@ -213,15 +223,18 @@ func updateHovered(obj) -> void:
 
 
 func hideGhosts() -> void:
-	ghostStc.visible = false
+	for ghost in ghostsStc:
+		ghost.visible = false
 	ghostPipe.visible = false
 
 
 # from: selected pos
 # to:  pos of new building
 func showGhosts(from: Vector3, to: Vector3) -> void:
-	ghostStc.visible = true
-	ghostStc.translation = to
+	var ghostIdx = 0 if placedStructureType == "Pump" else 1
+	for i in range(0,2):
+		ghostsStc[i].visible = i == ghostIdx
+	ghostsStc[ghostIdx].translation = to
 
 	ghostPipe.visible = true
 	alignPipe(ghostPipe, from, to)

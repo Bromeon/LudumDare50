@@ -1,8 +1,8 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://Scene/Objects/Structure.gd" type="Script" id=1]
 [ext_resource path="res://Scene/Util/Text2D.tscn" type="PackedScene" id=2]
-
+[ext_resource path="res://Scene/Objects/Ore2.tscn" type="PackedScene" id=3]
 
 [sub_resource type="CylinderMesh" id=1]
 top_radius = 1.5
@@ -29,6 +29,7 @@ baseText = "Ore"
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
 
 [node name="Mesh" type="MeshInstance" parent="Core"]
+visible = false
 mesh = SubResource( 1 )
 skeleton = NodePath("../..")
 material/0 = null
@@ -40,6 +41,7 @@ shape = SubResource( 2 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0 )
 
 [node name="Mesh" type="MeshInstance" parent="Roof"]
+visible = false
 mesh = SubResource( 3 )
 skeleton = NodePath("../..")
 material/0 = null
@@ -49,3 +51,6 @@ shape = SubResource( 4 )
 
 [node name="Text3D" parent="." instance=ExtResource( 2 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0 )
+
+[node name="Ore" parent="." instance=ExtResource( 3 )]
+transform = Transform( 0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, -0.242863, 0 )

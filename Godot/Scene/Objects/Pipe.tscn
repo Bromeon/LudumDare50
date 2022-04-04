@@ -1,8 +1,20 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Scene/Objects/Structure.gd" type="Script" id=1]
+[ext_resource path="res://Assets/Shader/Matcap.gdshader" type="Shader" id=2]
+[ext_resource path="res://Textures/Matcaps/Iron.png" type="Texture" id=3]
+[ext_resource path="res://Textures/Grunge.png" type="Texture" id=4]
 
 [sub_resource type="CylinderMesh" id=1]
+
+[sub_resource type="ShaderMaterial" id=4]
+resource_local_to_scene = true
+shader = ExtResource( 2 )
+shader_param/tint = Color( 0.0980392, 0.635294, 0.772549, 1 )
+shader_param/grunge_scale = 3.457
+shader_param/grunge_amount = 0.728
+shader_param/Matcap = ExtResource( 3 )
+shader_param/Grunge = ExtResource( 4 )
 
 [node name="Pipe" type="Spatial"]
 script = ExtResource( 1 )
@@ -13,4 +25,4 @@ transform = Transform( -4.37114e-08, 0, -0.2, 0, 0.2, 0, 1, 0, -8.74228e-09, 0, 
 [node name="Mesh" type="MeshInstance" parent="Core"]
 transform = Transform( -1.41065e-07, 1, 2.18557e-08, 0, -4.37114e-08, 0.5, 0.5, 2.8213e-07, 6.16615e-15, 1, 0, 0 )
 mesh = SubResource( 1 )
-material/0 = null
+material/0 = SubResource( 4 )

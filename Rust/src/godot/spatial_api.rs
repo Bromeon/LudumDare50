@@ -71,6 +71,8 @@ impl SpatialApi {
 	fn instance_structure(&self, base: &Spatial, pos: Vector2, ty_name: &str) -> Structure {
 		let (instanced, id) = self.instance_scene(ty_name);
 
+		let node_id = instanced.get_instance_id();
+
 		instanced.set_translation(pos.to_3d());
 		instanced.set_scale(0.2 * Vector3::ONE);
 		base.get_node("Structures")
@@ -369,6 +371,7 @@ impl SpatialApi {
 			// Update in 2 places (keep map and rtree in sync)
 			stc.set_powered(powered);
 			Self::sync_structure(*stc, &mut self.structures_by_id);
+			world.call("setPowered", &v![stc.instance_id(), powered]);
 		}
 
 		for pipe in self.pipes.iter() {

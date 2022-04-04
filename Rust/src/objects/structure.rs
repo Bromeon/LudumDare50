@@ -22,7 +22,12 @@ pub struct Structure {
 }
 
 impl Structure {
-	pub fn new(ty: StructureType, position: Vector2, id: i64, health: f32) -> Structure {
+	pub fn new(
+		ty: StructureType,
+		position: Vector2,
+		id: i64,
+		health: f32,
+	) -> Structure {
 		Self {
 			ty,
 			position,
@@ -130,6 +135,7 @@ impl Structure {
 			StructureType::Irrigation => None,
 		}
 	}
+
 }
 
 impl RTreeObject for Structure {

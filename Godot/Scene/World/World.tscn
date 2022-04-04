@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=2]
+[gd_scene load_steps=28 format=2]
 
 [ext_resource path="res://Scene/World/World.gd" type="Script" id=1]
 [ext_resource path="res://Native/SpatialApi.gdns" type="Script" id=2]
@@ -8,6 +8,7 @@
 [ext_resource path="res://Environment/Environment.tres" type="Environment" id=6]
 [ext_resource path="res://Textures/Grass2/Stylized_Grass_002_basecolor.jpg" type="Texture" id=7]
 [ext_resource path="res://Scene/Objects/Pump.tscn" type="PackedScene" id=8]
+[ext_resource path="res://Scene/Objects/Irrigation2.tscn" type="PackedScene" id=9]
 [ext_resource path="res://Scene/World/HUD.gd" type="Script" id=10]
 [ext_resource path="res://Textures/Grass2/Stylized_Grass_002_roughness.jpg" type="Texture" id=11]
 [ext_resource path="res://Textures/Blight2/Stylized_Dry_Mud_001_roughness.jpg" type="Texture" id=12]
@@ -113,6 +114,9 @@ ghost = true
 
 [node name="Pipe" parent="Ghosts" instance=ExtResource( 17 )]
 ghost = true
+
+[node name="Irrigation" parent="Ghosts" instance=ExtResource( 9 )]
+transform = Transform( 0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0, 0 )
 
 [node name="HUD" type="Control" parent="."]
 anchor_right = 1.0

@@ -5,6 +5,13 @@ export(String) var baseText = ""
 
 const ghostMaterial = preload("res://Assets/GhostMaterial.tres")
 
+const poweredColor = Color("19a2c5")
+const normalColor = Color("c16b24")
+
+func setPowered(powered):
+	var mat = $Core/Mesh.get_surface_material(0)
+	mat.set_shader_param("tint", poweredColor if powered else normalColor)
+
 
 func _ready():
 	if ghost:

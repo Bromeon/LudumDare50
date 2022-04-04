@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://Models/Irrigation.glb" type="PackedScene" id=1]
 [ext_resource path="res://Assets/Shader/Matcap.gdshader" type="Shader" id=2]
@@ -6,12 +6,13 @@
 [ext_resource path="res://Textures/Grunge.png" type="Texture" id=4]
 [ext_resource path="res://Textures/Matcaps/Iron.png" type="Texture" id=5]
 [ext_resource path="res://Scene/Objects/SmokeParticles.tscn" type="PackedScene" id=6]
+[ext_resource path="res://Scene/Objects/Irrigation2.gd" type="Script" id=7]
 
-[sub_resource type="ShaderMaterial" id=4]
+[sub_resource type="ShaderMaterial" id=8]
 shader = ExtResource( 2 )
 shader_param/tint = Color( 0.85098, 0.639216, 0.411765, 1 )
-shader_param/grunge_scale = 3.457
-shader_param/grunge_amount = 0.728
+shader_param/grunge_scale = 0.545
+shader_param/grunge_amount = 0.863
 shader_param/Matcap = ExtResource( 3 )
 shader_param/Grunge = ExtResource( 4 )
 
@@ -40,9 +41,10 @@ shader_param/Matcap = ExtResource( 5 )
 shader_param/Grunge = ExtResource( 4 )
 
 [node name="Irrigation" instance=ExtResource( 1 )]
+script = ExtResource( 7 )
 
 [node name="Cube001" parent="." index="0"]
-material/0 = SubResource( 4 )
+material/0 = SubResource( 8 )
 
 [node name="Cylinder" parent="." index="1"]
 material/0 = SubResource( 5 )

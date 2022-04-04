@@ -22,7 +22,7 @@ func init(number: int):
 	else:
 		usedColor = negativeColor
 
-	print("children: ", get_children())
+	#print("children: ", get_children())
 	$Text.text = str(prefix, num)
 	$Text.textColor = usedColor
 
