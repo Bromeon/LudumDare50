@@ -210,7 +210,7 @@ impl SpatialApi {
 	) -> Vec<i64> {
 		// Remove destroyed structures
 		let mut removed_pipe_ids = vec![];
-		for elem in structures_to_remove .iter() {
+		for elem in structures_to_remove.iter() {
 			let id_to_remove = elem.instance_id();
 
 			unsafe {
@@ -686,6 +686,14 @@ impl SpatialApi {
 		} else {
 			"?".to_string()
 		}
+	}
+
+	#[export]
+	fn can_build_from(&self, _base: &Spatial, instance_id: i64) -> bool {
+		self.structures_by_id
+			.get(&instance_id)
+			.map(|s| s.ty() != StructureType::Ore)
+			.unwrap_or(false)
 	}
 }
 

@@ -150,11 +150,12 @@ func handleMouseInteraction():
 
 	if collider is StaticBody:
 		var hovered: Spatial = collider.get_parent()
-		updateTooltip(hovered, "Left click: select")
-
-		# Left click selected
-		if Input.is_action_just_pressed("left_click"):
-			updateSelected(hovered)
+		if $SpatialApi.can_build_from(hovered.get_instance_id()):
+			updateTooltip(hovered, "Left click: select")
+			
+			# Left click selected
+			if Input.is_action_just_pressed("left_click"):
+				updateSelected(hovered)
 
 		# Just hovering (or clicked + hovered)
 		updateHovered(hovered)
