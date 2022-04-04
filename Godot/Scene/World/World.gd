@@ -9,6 +9,8 @@ const RAY_LENGTH = 1000.0
 
 const BUILD_RADIUS = 6.0
 
+const IRRIGATION_COST = 50
+const PUMP_COST = 25
 
 var matDefault: SpatialMaterial
 var matHighlighted: SpatialMaterial
@@ -174,14 +176,20 @@ func handleMouseInteraction():
 
 		# Place building
 		if Input.is_action_just_pressed("right_click"):
-			if groundPosInRange != null:
-				var add = AddStructure.new()
-				add.position = groundPosInRange
-				add.structure_ty = placedStructureType
-				add.pipe_from_obj = selectedObj
+			var buildingCost = PUMP_COST if placedStructureType == "Pump" else IRRIGATION_COST
+			if $SpatialApi.can_consume_ore(buildingCost):
+				$SpatialApi.consume_ore(buildingCost)
+				if groundPosInRange != null:
+					var add = AddStructure.new()
+					add.position = groundPosInRange
+					add.structure_ty = placedStructureType
+					add.pipe_from_obj = selectedObj
 
-				var id = $SpatialApi.add_structure(add)
-				updateSelected(instance_from_id(id))
+					var id = $SpatialApi.add_structure(add)
+					updateSelected(instance_from_id(id))
+			else:
+				# TODO: Play some SFX
+				print("TODO!!!")
 			return
 
 		# Drag ghost

@@ -43,7 +43,7 @@ impl SpatialApi {
 			pipes: Vec::new(),
 			terrain: None,
 			scenes: Dictionary::new_shared(),
-			ore_amount: 0,
+			ore_amount: 100,
 			frame_count: 0,
 		}
 	}
@@ -54,8 +54,8 @@ impl SpatialApi {
 
 		let mut structures = vec![];
 
-		let variants = ["Water", "Ore", "Pump", "Irrigation"];
-		for pos in random_positions(20) {
+		let variants = ["Water", "Ore", "Ore", "Ore"];//, "Pump", "Irrigation"];
+		for pos in random_positions(10) {
 			let ty_name = variants.into_iter().choose(&mut thread_rng()).unwrap();
 			let stc = self.instance_structure(base, pos, ty_name);
 
@@ -230,15 +230,10 @@ impl SpatialApi {
 		}
 
 		// Iterate irrigators
-		for irrigator in self.structures_by_id.values() {
+		for irrigator in self.structures_by_id.values().filter(|stc| {
 			// Skip non-irrigators and inactive ones
-			// FIXME powered
-			if irrigator.ty() != StructureType::Irrigation
-			/* || !irrigator.is_powered()*/
-			{
-				continue;
-			}
-
+			stc.ty() == StructureType::Irrigation && stc.is_powered()
+		}) {
 			let surrounding = Self::iter_structures_in_radius(
 				&mut self.rtree,
 				irrigator.position(),
@@ -248,19 +243,22 @@ impl SpatialApi {
 			let mut mined_in_cycle = 0;
 			for stc in surrounding {
 				if stc.ty() == StructureType::Ore {
-					let mined = stc.mine_amount(ORE_PER_COLLECTION);
-					mined_in_cycle += mined;
+					let mined_amount = stc.mine_amount(ORE_PER_COLLECTION);
+					mined_in_cycle += mined_amount;
 
-					animated_positions.push(stc.position());
-					animated_diffs.push(-ORE_PER_COLLECTION);
-
-					remaining_resource_amounts.insert(stc.instance_id(), stc.amount())
+					if mined_amount > 0 {
+						animated_positions.push(stc.position());
+						animated_diffs.push(-mined_amount);
+						remaining_resource_amounts.insert(stc.instance_id(), stc.amount())
+					}
 				}
 			}
 
 			self.ore_amount += mined_in_cycle;
-			animated_positions.push(irrigator.position());
-			animated_diffs.push(mined_in_cycle);
+			if mined_in_cycle > 0 {
+				animated_positions.push(irrigator.position());
+				animated_diffs.push(mined_in_cycle);
+			}
 		}
 
 		let result = AmountsUpdated {
@@ -484,6 +482,16 @@ impl SpatialApi {
 		self.update_pipe_network(world);
 
 		stc.instance_id()
+	}
+
+	#[export]
+	fn can_consume_ore(&mut self, base: &Spatial, amt: i32) -> bool {
+		return self.ore_amount > amt
+	}
+
+	#[export]
+	fn consume_ore(&mut self, base: &Spatial, amt: i32) {
+		self.ore_amount = (self.ore_amount - amt).max(0)
 	}
 }
 

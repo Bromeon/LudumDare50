@@ -79,7 +79,7 @@ impl Structure {
 			std::mem::replace(remaining, 0)
 		} else {
 			*remaining -= amount;
-			*remaining
+			amount
 		}
 	}
 
