@@ -3,7 +3,7 @@ use rand::prelude::*;
 use rstar::{RTree, AABB};
 //use std::collections::HashMap;
 
-use crate::godot::{BlightUpdateResult, Terrain};
+use crate::godot::{AddStructure, BlightUpdateResult, Terrain};
 use crate::objects::{Pipe, Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
 use crate::{Vector2Ext, Vector3Ext};
 
@@ -255,18 +255,14 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn add_structure(
-		&mut self,
-		base: &Spatial,
-		pos: Vector3,
-		ty_name: String,
-		pipe_from_obj: Option<Ref<Spatial>>,
-	) -> i64 {
-		let stc = self.instance_structure(base, pos.to_2d(), &ty_name);
+	fn add_structure(&mut self, base: &Spatial, added: Instance<AddStructure>) -> i64 {
+		let added: AddStructure = added.map(|inst, _| inst.clone()).unwrap();
+
+		let stc = self.instance_structure(base, added.position.to_2d(), &added.structure_ty);
 		godot_print!("Add structure {:?}", stc);
 
-		if let Some(from) = pipe_from_obj {
-			let pipe_id = self.instance_pipe(base, from.translation(), pos);
+		if let Some(from) = added.pipe_from_obj {
+			let pipe_id = self.instance_pipe(base, from.translation(), added.position);
 			let from_id = from.get_instance_id();
 			let to_id = stc.instance_id();
 

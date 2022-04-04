@@ -1,6 +1,7 @@
 extends Spatial
 
 const SpatialApi = preload("res://Native/SpatialApi.gdns")
+const AddStructure = preload("res://Native/AddStructure.gdns")
 
 
 const RAY_LENGTH = 1000.0
@@ -109,7 +110,12 @@ func handleMouseInteraction():
 		# Place building
 		if Input.is_action_just_pressed("right_click"):
 			if groundPosInRange != null:
-				var id = $SpatialApi.add_structure(groundPosInRange, "Pump", selectedObj)
+				var add = AddStructure.new()
+				add.position = groundPosInRange
+				add.structure_ty = "Pump"
+				add.pipe_from_obj = selectedObj
+
+				var id = $SpatialApi.add_structure(add)
 				updateSelected(instance_from_id(id))
 			return
 
