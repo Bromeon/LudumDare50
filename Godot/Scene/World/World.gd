@@ -1,6 +1,7 @@
 extends Spatial
 
 const SpatialApi = preload("res://Native/SpatialApi.gdns")
+const AddStructure = preload("res://Native/AddStructure.gdns")
 
 
 const RAY_LENGTH = 1000.0
@@ -28,6 +29,7 @@ func _ready():
 		Ore = preload("res://Scene/Objects/Ore.tscn"),
 		Pump = preload("res://Scene/Objects/Pump.tscn"),
 		Irrigation = preload("res://Scene/Objects/Irrigation.tscn"),
+		Pipe = preload("res://Scene/Objects/Pipe.tscn"),
 	}
 
 	$SpatialApi.load(scenes)
@@ -50,7 +52,11 @@ func _process(dt: float):
 		get_tree().quit()
 		return
 
-	$SpatialApi.update_blight_impact(dt)
+	var result = $SpatialApi.update_blight(dt)
+	for id in result.removed_pipe_ids:
+		var node = instance_from_id(id)
+		node.queue_free()
+
 	$HUD.set_ore_amount($SpatialApi.get_ore_amount())
 
 	handleMouseInteraction()
@@ -104,7 +110,12 @@ func handleMouseInteraction():
 		# Place building
 		if Input.is_action_just_pressed("right_click"):
 			if groundPosInRange != null:
-				var id = $SpatialApi.add_structure(groundPosInRange, "Pump")
+				var add = AddStructure.new()
+				add.position = groundPosInRange
+				add.structure_ty = "Pump"
+				add.pipe_from_obj = selectedObj
+
+				var id = $SpatialApi.add_structure(add)
 				updateSelected(instance_from_id(id))
 			return
 
@@ -152,17 +163,21 @@ func showGhosts(from: Vector3, to: Vector3) -> void:
 	ghostStc.translation = to
 
 	ghostPipe.visible = true
+	alignPipe(ghostPipe, from, to)
 
+
+# Called from Rust
+func alignPipe(pipe: Spatial, from: Vector3, to: Vector3) -> void:
 	var structureWidth = 0.2
 	var dist = from.distance_to(to) - structureWidth
 
-	ghostPipe.transform = Transform() \
+	pipe.transform = Transform() \
 		.translated(from) \
 		.scaled(Vector3(1, 1, 0.5 * dist)) \
 		.translated(-from)
 
-	ghostPipe.transform.origin = from
-	ghostPipe.look_at(to, Vector3.UP)
+	pipe.transform.origin = from
+	pipe.look_at(to, Vector3.UP)
 
 
 # Returns object hit by mouse, or null if on ground

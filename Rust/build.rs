@@ -27,9 +27,14 @@ fn main() {
 		godot_gdnlib_res_path: PathBuf::from("res://Native/NativeLib.gdnlib"),
 		rust_class_dir: PathBuf::from("src/godot"),
 		classes: vec![
+			// Nodes
 			class!(SpatialApi: Spatial),
 			class!(Terrain: Node),
 			class!(Zeppelin: Spatial),
+			//
+			// Data classes
+			class!(AddStructure),
+			class!(BlightUpdateResult),
 		],
 	};
 

@@ -3,8 +3,8 @@ use rand::prelude::*;
 use rstar::{RTree, AABB};
 //use std::collections::HashMap;
 
-use crate::godot::Terrain;
-use crate::objects::{Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
+use crate::godot::{AddStructure, BlightUpdateResult, Terrain};
+use crate::objects::{Pipe, Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
 use crate::{Vector2Ext, Vector3Ext};
 
 const DAMAGE_PER_SECOND: f32 = 80.0;
@@ -21,10 +21,11 @@ const MINER_TICK_FREQ: usize = 60 * 2;
 pub struct SpatialApi {
 	//structures_by_id: HashMap<i64, Structure>,
 	rtree: RTree<Structure>,
+	pipes: Vec<Pipe>,
 
 	terrain: Option<Instance<Terrain>>,
 
-	stc_scenes: Dictionary,
+	scenes: Dictionary,
 	ore_amount: u32,
 	frame_count: usize,
 }
@@ -37,8 +38,9 @@ impl SpatialApi {
 		Self {
 			//structures_by_id: HashMap::new(),
 			rtree: RTree::new(),
+			pipes: Vec::new(),
 			terrain: None,
-			stc_scenes: Dictionary::new_shared(),
+			scenes: Dictionary::new_shared(),
 			ore_amount: 0,
 			frame_count: 0,
 		}
@@ -46,7 +48,7 @@ impl SpatialApi {
 
 	#[export]
 	fn load(&mut self, base: &Spatial, scenes: Dictionary) {
-		self.stc_scenes = scenes;
+		self.scenes = scenes;
 
 		let mut structures = vec![];
 
@@ -64,15 +66,7 @@ impl SpatialApi {
 	}
 
 	fn instance_structure(&self, base: &Spatial, pos: Vector2, ty_name: &str) -> Structure {
-		let scene = self
-			.stc_scenes
-			.get(ty_name)
-			.unwrap()
-			.to_object::<PackedScene>()
-			.unwrap();
-		let instanced = scene.instance(0).unwrap();
-		let instanced = instanced.cast::<Spatial>();
-		let id = instanced.get_instance_id();
+		let (instanced, id) = self.instance_scene(ty_name);
 
 		instanced.set_translation(pos.to_3d());
 		instanced.set_scale(0.2 * Vector3::ONE);
@@ -91,17 +85,51 @@ impl SpatialApi {
 		Structure::new(ty, pos, id, STRUCTURE_HEALTH)
 	}
 
+	fn instance_pipe(&self, base: &Spatial, from: Vector3, to: Vector3) -> i64 {
+		let (pipe, id) = self.instance_scene("Pipe");
+
+		// Important: add to tree first!
+		base.get_node("Pipes").unwrap().add_child(pipe, false);
+
+		let world = base.get_parent().unwrap();
+		world.call("alignPipe", &v![pipe, from, to]);
+		id
+	}
+
+	fn instance_scene(&self, scene_key: &str) -> (Ref<Spatial>, i64) {
+		let scene = self.scenes.get(scene_key).unwrap();
+		let scene = scene.to_object::<PackedScene>().unwrap();
+		let instanced = scene.instance(0).unwrap();
+		let instanced = instanced.cast::<Spatial>();
+		let id = instanced.get_instance_id();
+
+		(instanced, id)
+	}
+
 	#[export]
-	fn update_blight_impact(&mut self, _base: &Spatial, dt: f32) {
+	fn update_blight(&mut self, _base: &Spatial, dt: f32) -> Instance<BlightUpdateResult> {
 		self.frame_count += 1;
-		if let Some(inst) = self.terrain.as_mut() {
-			let collected_ore = inst
+		let result = if let Some(inst) = self.terrain.as_mut() {
+			let result = inst
 				.map_mut(|terrain, _| {
-					Self::update_blight_impl(&mut self.rtree, dt, terrain, self.frame_count)
+					Self::update_blight_impl(
+						&mut self.rtree,
+						&mut self.pipes,
+						dt,
+						terrain,
+						self.frame_count,
+					)
 				})
 				.unwrap();
-			self.ore_amount += collected_ore;
-		}
+
+			self.ore_amount += result.collected_ore;
+
+			result
+		} else {
+			BlightUpdateResult::default()
+		};
+
+		Instance::emplace(result).into_shared()
 	}
 
 	/// Returns the amount of ore collected
@@ -109,11 +137,12 @@ impl SpatialApi {
 	#[allow(unreachable_code)]
 	fn update_blight_impl(
 		rtree: &mut RTree<Structure>,
+		pipes: &mut Vec<Pipe>,
 		dt: f32,
 		terrain: &mut Terrain,
 		frame_count: usize,
-	) -> u32 {
-		let mut to_remove = vec![];
+	) -> BlightUpdateResult {
+		let mut structures_to_remove = vec![];
 		let mut ores = vec![];
 
 		for stc in rtree.iter_mut() {
@@ -134,16 +163,11 @@ impl SpatialApi {
 			}
 
 			if !stc.is_alive() {
-				to_remove.push(*stc);
+				structures_to_remove.push(*stc);
 			}
 		}
 
-		// RTree API only allows removal one at a time
-		if !to_remove.is_empty() {
-			//println!("Remove {} structures", to_remove.len());
-		}
-
-		let mut ore_collected = 0;
+		let mut collected_ore = 0;
 		if frame_count % MINER_TICK_FREQ == 0 {
 			for ore in ores {
 				// If there's at least one irrigation covering this ore, then it
@@ -151,19 +175,43 @@ impl SpatialApi {
 				if Self::iter_structures_in_radius(rtree, ore.position(), IRRIGATION_CLEAN_RADIUS)
 					.any(|other| matches!(other.ty(), StructureType::Ore))
 				{
-					ore_collected += ORE_PER_COLLECTION;
+					collected_ore += ORE_PER_COLLECTION;
 				}
 			}
 		}
 
-		for elem in to_remove.iter() {
+		// Remove destroyed structures
+		let mut removed_pipe_ids = vec![];
+		for elem in structures_to_remove.iter() {
 			rtree.remove(elem);
 
-			let node = unsafe { Node::from_instance_id(elem.instance_id()) };
+			let node_id = elem.instance_id();
+			let node = unsafe { Node::from_instance_id(node_id) };
 			node.queue_free();
+
+			// O(n^2), could be done by Multimap<i64, Structure> (or HashMap<i64, Vec<Structure>>) but likely won't matter in this scale
+			//pipes.retain(|pipe| pipe.start_id() != node_id && pipe.end_id() != node_id);
+
+			let mut i = 0;
+			while i < pipes.len() {
+				let pipe = pipes[i].clone();
+				if pipe.start_node_id() == node_id || pipe.end_node_id() == node_id {
+					pipes.swap_remove(i);
+					removed_pipe_ids.push(pipe.pipe_node_id());
+				} else {
+					i += 1;
+				}
+			}
 		}
 
-		ore_collected
+		if !removed_pipe_ids.is_empty() {
+			godot_print!("Removed pipe IDs: {:?}", removed_pipe_ids);
+		}
+
+		BlightUpdateResult {
+			collected_ore,
+			removed_pipe_ids,
+		}
 	}
 
 	fn iter_structures_in_radius(
@@ -207,9 +255,19 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn add_structure(&mut self, base: &Spatial, pos: Vector3, ty_name: String) -> i64 {
-		let stc = self.instance_structure(base, pos.to_2d(), &ty_name);
+	fn add_structure(&mut self, base: &Spatial, added: Instance<AddStructure>) -> i64 {
+		let added: AddStructure = added.map(|inst, _| inst.clone()).unwrap();
+
+		let stc = self.instance_structure(base, added.position.to_2d(), &added.structure_ty);
 		godot_print!("Add structure {:?}", stc);
+
+		if let Some(from) = added.pipe_from_obj {
+			let pipe_id = self.instance_pipe(base, from.translation(), added.position);
+			let from_id = from.get_instance_id();
+			let to_id = stc.instance_id();
+
+			self.pipes.push(Pipe::new(pipe_id, from_id, to_id));
+		}
 
 		//self.structures_by_id.insert(id, stc);
 		self.rtree.insert(stc);
