@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Pipe {
 	pipe_id: i64,
 	start_id: i64,
