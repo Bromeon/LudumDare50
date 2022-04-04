@@ -5,18 +5,19 @@
 
 [node name="Text3D" type="Spatial"]
 script = ExtResource( 1 )
+text = null
+textColor = null
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="Control" type="Control" parent="CanvasLayer"]
-margin_left = -64.0
-margin_top = -64.0
-margin_right = 64.0
-margin_bottom = 64.0
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer"]
+margin_right = 40.0
+margin_bottom = 40.0
 
-[node name="Label" type="Label" parent="CanvasLayer/Control"]
-margin_right = 130.0
-margin_bottom = 130.0
+[node name="Label" type="Label" parent="CanvasLayer/CenterContainer"]
+margin_left = 20.0
+margin_right = 20.0
+margin_bottom = 41.0
 theme = ExtResource( 2 )
 align = 1
 valign = 1

@@ -1,25 +1,28 @@
 extends Spatial
 
 export(String) var text setget _setString
-export(Color) var textColor
+export(Color) var textColor setget _setColor
 
-onready var control = $CanvasLayer/Control
-onready var label = $CanvasLayer/Control/Label
+onready var label = $CanvasLayer/CenterContainer/Label
 
 func _ready():
-	pass # Replace with function body.
+	pass
+	#$Node2D.material = textMaterial
 
 func _setString(s: String) -> void:
 	#print("Set string: ", s)
-	label.text = s
+
+	# Note: cannot use onready var if set via editor
+	$CanvasLayer/CenterContainer/Label.text = s
+
+
+func _setColor(c: Color) -> void:
+	$CanvasLayer/CenterContainer.modulate = c
 
 
 func _process(_delta):
 	var cam = get_viewport().get_camera()
 	var pos2d = cam.unproject_position(get_global_transform().origin)
-	
-	control.add_color_override("font_color", textColor)
-	control.set("custom_colors/font_color", Color(1,0,0))
 
 	label.rect_position = pos2d - label.rect_size / 2.0
 
