@@ -210,7 +210,7 @@ impl SpatialApi {
 	) -> Vec<i64> {
 		// Remove destroyed structures
 		let mut removed_pipe_ids = vec![];
-		for elem in structures_to_remove {
+		for elem in structures_to_remove .iter() {
 			let id_to_remove = elem.instance_id();
 
 			unsafe {
@@ -313,11 +313,7 @@ impl SpatialApi {
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
 		animated_strings: &mut PoolArray<GodotString>,
-<<<<<<< HEAD
-	) -> bool {
-=======
 	) -> WaterResult {
->>>>>>> 439140bc1b2cb8de0420d09db336c1ecaf383af6
 		if (self.frame_count + WATER_TICK_OFFSET) % WATER_TICK_FREQ != 0 {
 			return WaterResult::NothingToDo;
 		}
