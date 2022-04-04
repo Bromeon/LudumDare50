@@ -132,6 +132,10 @@ impl SpatialApi {
 			BlightUpdateResult::default()
 		};
 
+		if !result.removed_pipe_ids.is_empty() {
+			self.update_pipe_network();
+		}
+
 		Instance::emplace(result).into_shared()
 	}
 
@@ -273,80 +277,119 @@ impl SpatialApi {
 	}
 
 	fn update_pipe_network(&mut self) {
-		// First, find all water spots connected to pipes
-		let mut visited = HashSet::<i64>::new();
+		// Note: of course, we could only update from the changed pipes, but this is a more general approach
+		println!("Update pipe network...");
 
+		// First, find all water spots connected to pipes
+		let mut visited_structures = HashSet::<i64>::new();
 		let mut powered_structures = HashSet::<i64>::new();
+		let mut powered_pipes = HashSet::<i64>::new();
+		let mut graph_roots = Vec::new();
+
 		for pipe in self.pipes.iter() {
+			let pipe_id = pipe.pipe_node_id();
+
 			let start_id = pipe.start_node_id();
 			let start_stc = *self.structures_by_id.get(&start_id).unwrap();
 			if start_stc.ty() == StructureType::Water {
 				powered_structures.insert(start_id);
+				powered_pipes.insert(pipe_id);
+				graph_roots.push((pipe_id, start_id));
 			}
 
 			let end_id = pipe.end_node_id();
 			let end_stc = *self.structures_by_id.get(&end_id).unwrap();
 			if end_stc.ty() == StructureType::Water {
 				powered_structures.insert(end_id);
+				powered_pipes.insert(pipe_id);
+				graph_roots.push((pipe_id, end_id));
 			}
 		}
 
-		let initial = powered_structures.clone();
-		for root_id in initial {
-			Self::recurse_pipes(
-				root_id,
+		for (pipe_id, stc_id) in graph_roots {
+			Self::recurse_pipe_graph(
+				pipe_id,
+				stc_id,
 				&self.pipes,
 				&self.structures_by_id,
 				&mut powered_structures,
-				&mut visited,
+				&mut powered_pipes,
+				&mut visited_structures,
 			);
 		}
+
+		// Apply changes to every structure
+		for stc in self.rtree.iter_mut() {
+			let id = stc.instance_id();
+			let powered = powered_structures.contains(&id);
+
+			// Update in 2 places (keep map and rtree in sync)
+			stc.set_powered(powered);
+			self.structures_by_id
+				.get_mut(&id)
+				.unwrap()
+				.set_powered(powered);
+		}
+
+		println!("Done updating pipe network.\n");
 	}
 
-	fn recurse_pipes(
-		node_id: i64,
+	fn recurse_pipe_graph(
+		pipe_id: i64,
+		stc_id: i64,
 		pipes: &Vec<Pipe>,
 		structures_by_id: &HashMap<i64, Structure>,
 		powered_structures: &mut HashSet<i64>,
-		visited: &mut HashSet<i64>,
+		powered_pipes: &mut HashSet<i64>,
+		visited_structures: &mut HashSet<i64>,
 	) {
-		if visited.contains(&node_id) {
+		if visited_structures.contains(&stc_id) {
 			return;
 		}
-		visited.insert(node_id);
+		visited_structures.insert(stc_id);
 
-		let stc = structures_by_id.get(&node_id).unwrap();
+		let stc = structures_by_id.get(&stc_id).unwrap();
 		if stc.can_be_powered() {
-			println!("   Power {node_id}!");
-			powered_structures.insert(node_id);
+			println!("    Power {node_id}!");
+			powered_pipes.insert(pipe_id);
+			powered_structures.insert(stc_id);
 		}
 
-		for adjacent_id in Self::get_pipe_connections(node_id, pipes, visited) {
-			println!("Explore {node_id} -> {adjacent_id}...");
-			Self::recurse_pipes(
+		for (pipe_id, adjacent_id) in
+			Self::get_pipe_adjacent_pairs(stc_id, pipes, visited_structures)
+		{
+			println!("  Explore {node_id} -> {adjacent_id}...");
+			Self::recurse_pipe_graph(
+				pipe_id,
 				adjacent_id,
 				pipes,
 				structures_by_id,
 				powered_structures,
-				visited,
+				powered_pipes,
+				visited_structures,
 			);
 		}
 	}
 
-	fn get_pipe_connections(node_id: i64, pipes: &Vec<Pipe>, except: &HashSet<i64>) -> Vec<i64> {
+	fn get_pipe_adjacent_pairs(
+		node_id: i64,
+		pipes: &Vec<Pipe>,
+		except: &HashSet<i64>,
+	) -> Vec<(i64, i64)> {
 		// Slow, whatever
 		let mut result = vec![];
 		for pipe in pipes {
+			let pipe_id = pipe.pipe_node_id();
 			let start_id = pipe.start_node_id();
 			let end_id = pipe.end_node_id();
 
 			if start_id == node_id {
 				if !except.contains(&end_id) {
-					result.push(end_id);
+					result.push((pipe_id, end_id));
 				}
 			} else if end_id == node_id {
 				if !except.contains(&start_id) {
-					result.push(start_id);
+					result.push((pipe_id, start_id));
 				}
 			}
 		}
@@ -372,6 +415,9 @@ impl SpatialApi {
 
 		self.structures_by_id.insert(stc.instance_id(), stc);
 		self.rtree.insert(stc);
+
+		self.update_pipe_network();
+
 		stc.instance_id()
 	}
 
