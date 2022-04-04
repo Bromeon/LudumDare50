@@ -22,15 +22,15 @@
 [ext_resource path="res://Assets/TextTheme.tres" type="Theme" id=20]
 
 [sub_resource type="PlaneMesh" id=4]
-size = Vector2( 25, 25 )
+size = Vector2( 100, 100 )
 subdivide_width = 10
 
 [sub_resource type="ImageTexture" id=12]
 
 [sub_resource type="ShaderMaterial" id=3]
 shader = ExtResource( 18 )
-shader_param/Grass_Scale = 5.0
-shader_param/Blight_Scale = 5.0
+shader_param/Grass_Scale = 20.0
+shader_param/Blight_Scale = 20.0
 shader_param/Blight_Tint = Color( 0.294118, 0.266667, 0.313726, 1 )
 shader_param/Grass_Tint = Color( 0.313726, 0.552941, 0.294118, 1 )
 shader_param/Height_Blend_Factor = 0.166

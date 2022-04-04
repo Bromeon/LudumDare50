@@ -69,7 +69,7 @@ impl SpatialApi {
 		let mut at_least_available = vec!["Water", "Ore"];
 
 		let variants = ["Water", "Ore", "Ore", "Ore"]; //, "Pump", "Irrigation"];
-		for pos in random_positions(10) {
+		for pos in random_positions(50) {
 			let ty_name = if let Some(ty) = at_least_available.pop() {
 				ty
 			} else {
@@ -634,7 +634,7 @@ impl SpatialApi {
 }
 
 fn random_positions(n: usize) -> Vec<Vector2> {
-	let dist = rand::distributions::Uniform::new(-10.0, 10.0);
+	let dist = rand::distributions::Uniform::new(-40.0, 40.0);
 
 	//rand::thread_rng().g
 	let mut result = vec![];

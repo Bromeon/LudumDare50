@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode specular_schlick_ggx;
+render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
 
 uniform sampler2D Splatmap;
 uniform sampler2D Grass_A;
@@ -35,7 +35,11 @@ vec3 heightlerp(vec3 input1, float height1, vec3 input2, float height2, float t)
     return heightblend(input1, height1 * (1.0 - t), input2, height2 * t);
 }
 
-void vertex() {}
+varying vec3 untransformed_vertex;
+
+void vertex() {
+	untransformed_vertex = VERTEX;
+}
 
 void fragment() {
     vec4 splat = texture(Splatmap, UV.xy);
@@ -56,6 +60,12 @@ void fragment() {
     NORMALMAP = heightlerp(grass_n.xyz, grass_h.r, blight_n.xyz, blight_h.r, splat.r);
     NORMALMAP_DEPTH = 3.0;
     ROUGHNESS = heightlerp(grass_r.xyz, grass_h.r, blight_r.xyz, blight_h.r, splat.r).r;
+	
+	
+	float dist = (distance(untransformed_vertex, vec3(0.0, 0.0, 0.0))) / 100.0;
+	float t = smoothstep(0.45, 0.5, dist);
+	ALPHA = 1.0 - t;
+	//ALBEDO.r = 1.0 - t;
 }
 
 void light() {
