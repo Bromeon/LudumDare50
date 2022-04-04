@@ -6,7 +6,6 @@ const AddStructure = preload("res://Native/AddStructure.gdns")
 
 const RAY_LENGTH = 1000.0
 
-const EFFECT_RADIUS = 4.0
 const BUILD_RADIUS = 6.0
 
 
@@ -42,7 +41,6 @@ func _ready():
 	matAffected = SpatialMaterial.new()
 	matAffected.albedo_color = Color.goldenrod
 
-	$EffectRadius.scale = 2 * Vector3(EFFECT_RADIUS, 1, EFFECT_RADIUS)
 	$BuildRadius.scale = 2 * Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
 
 
@@ -144,8 +142,10 @@ func updateHovered(obj) -> void:
 	$EffectRadius.visible = true
 
 	# Mark affected buildings (in effect radius)
-	var affectedIds = $SpatialApi.query_radius(obj.translation, EFFECT_RADIUS)
-	for id in affectedIds:
+	var queried = $SpatialApi.query_effect_radius(obj)
+	$EffectRadius.scale = Vector3(queried.radius, 1.01, queried.radius)
+
+	for id in queried.affected_ids:
 		var node = instance_from_id(id)
 		if node != obj && node != selectedObj:
 			node.applyMaterial(matAffected)

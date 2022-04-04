@@ -3,7 +3,7 @@ use rand::prelude::*;
 use rstar::{RTree, AABB};
 //use std::collections::HashMap;
 
-use crate::godot::{AddStructure, BlightUpdateResult, Terrain};
+use crate::godot::{AddStructure, BlightUpdateResult, QueryResult, Terrain};
 use crate::objects::{Pipe, Structure, StructureType, IRRIGATION_CLEAN_RADIUS};
 use crate::{Vector2Ext, Vector3Ext};
 
@@ -236,7 +236,19 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn query_radius(&self, _base: &Spatial, position3d: Vector3, radius: f32) -> Vec<i64> {
+	fn query_effect_radius(&self, _base: &Spatial, node: Ref<Spatial>) -> Instance<QueryResult> {
+		// TODO O(n), could be HashMap'ed
+		let stc = self.rtree.iter().find(|stc| stc.instance_id() == node.get_instance_id())
+		          .expect("Queried non-structure object, make sure that collision shapes of other objects are disabled");
+
+		let radius = stc.clean_radius();
+		let affected_ids = self.query_affected_ids(node.translation(), radius);
+
+		let result = QueryResult { radius, affected_ids };
+		Instance::emplace(result).into_shared()
+	}
+
+	fn query_affected_ids(&self, position3d: Vector3, radius: f32) -> Vec<i64> {
 		//self.structures_by_id.keys().copied().collect()
 		let half_size = Vector2::ONE * radius;
 		let center = position3d.to_2d();

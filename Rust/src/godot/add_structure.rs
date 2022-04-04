@@ -9,7 +9,7 @@ pub struct AddStructure {
 	pub structure_ty: String,
 
 	#[property]
-	pub pipe_from_obj: Option<Ref<Spatial>>
+	pub pipe_from_obj: Option<Ref<Spatial>>,
 }
 
 #[methods]
