@@ -66,6 +66,10 @@ config/name="LudumDare50"
 run/main_scene="res://Scene/World/World.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+Sfx="*res://Scene/World/SFX.tscn"
+
 [debug]
 
 settings/stdout/print_fps=true

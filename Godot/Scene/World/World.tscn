@@ -147,6 +147,7 @@ text = "Ore amount: "
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Music"]
 stream = ExtResource( 19 )
+autoplay = true
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.0423464, 0.999103, 0, -0.999103, 0.0423464, -1.19209e-07, 0.13098, 2.31921 )

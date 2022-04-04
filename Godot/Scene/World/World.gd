@@ -195,12 +195,14 @@ func handleMouseInteraction():
 					add.position = groundPosInRange
 					add.structure_ty = placedStructureType
 					add.pipe_from_obj = selectedObj
-
+					
 					var id = $SpatialApi.add_structure(add)
+					Sfx.startMachineSound(groundPosInRange, id)
 					updateSelected(instance_from_id(id))
+					
+					Sfx.placeItem()
 			else:
-				# TODO: Play some SFX
-				print("TODO!!!")
+				Sfx.wrong()
 			return
 
 		# Drag ghost

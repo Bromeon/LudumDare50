@@ -213,6 +213,11 @@ impl SpatialApi {
 		for elem in structures_to_remove {
 			let id_to_remove = elem.instance_id();
 
+			unsafe {
+				autoload::<Node>("Sfx")
+					.unwrap()
+					.call("stopMachineSound", &[elem.instance_id().to_variant()]);
+			}
 			rtree.remove(&elem);
 			structures_by_id.remove(&id_to_remove);
 
@@ -245,6 +250,10 @@ impl SpatialApi {
 			for key in keys_to_remove {
 				irrigators_by_powering_water.remove(&key);
 			}
+		}
+
+		if !structures_to_remove.is_empty() {
+			unsafe { autoload::<Node>("Sfx").unwrap().call("destroy", &[]) };
 		}
 
 		if !removed_pipe_ids.is_empty() {
@@ -304,7 +313,11 @@ impl SpatialApi {
 		animated_positions: &mut PoolArray<Vector2>,
 		animated_diffs: &mut PoolArray<i32>,
 		animated_strings: &mut PoolArray<GodotString>,
+<<<<<<< HEAD
+	) -> bool {
+=======
 	) -> WaterResult {
+>>>>>>> 439140bc1b2cb8de0420d09db336c1ecaf383af6
 		if (self.frame_count + WATER_TICK_OFFSET) % WATER_TICK_FREQ != 0 {
 			return WaterResult::NothingToDo;
 		}
