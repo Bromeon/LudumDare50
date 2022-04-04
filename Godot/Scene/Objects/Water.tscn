@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Scene/Objects/Structure.gd" type="Script" id=1]
-[ext_resource path="res://Scene/Objects/Water2.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Scene/Util/Text2D.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Scene/Objects/Water2.tscn" type="PackedScene" id=3]
 
 [sub_resource type="QuadMesh" id=3]
 size = Vector2( 4, 4 )
@@ -29,3 +30,9 @@ shape = SubResource( 4 )
 
 [node name="Water" parent="Core" instance=ExtResource( 2 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51303, 0 )
+
+[node name="Text" parent="." instance=ExtResource( 2 )]
+textColor = Color( 0.247059, 0.423529, 0.501961, 1 )
+
+[node name="Water" parent="." instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.318483, 0 )

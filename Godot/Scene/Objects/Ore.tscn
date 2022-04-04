@@ -49,8 +49,9 @@ material/0 = null
 [node name="CollisionShape" type="CollisionShape" parent="Roof"]
 shape = SubResource( 4 )
 
-[node name="Text3D" parent="." instance=ExtResource( 2 )]
+[node name="Text" parent="." instance=ExtResource( 2 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0 )
 
 [node name="Ore" parent="." instance=ExtResource( 3 )]
 transform = Transform( 0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, -0.242863, 0 )
+textColor = Color( 0.458824, 0.431373, 0.360784, 1 )

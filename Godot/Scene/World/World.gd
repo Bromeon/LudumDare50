@@ -19,8 +19,8 @@ var matPowered: SpatialMaterial
 var lastHoveredObj: Spatial = null
 var selectedObj: Spatial = null
 
-onready var ghostsStc: Array = [$Ghosts/Pump, $Ghosts/Irrigation]
-onready var ghostPipe: Spatial = $Ghosts/Pipe
+onready var ghostsStc: Array = [$SceneUi/Ghosts/Pump, $SceneUi/Ghosts/Irrigation]
+onready var ghostPipe: Spatial = $SceneUi/Ghosts/Pipe
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ func _ready():
 	matPowered = SpatialMaterial.new()
 	matPowered.albedo_color = Color.blue
 
-	$BuildRadius.scale = Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
+	$SceneUi/BuildRadius.scale = Vector3(BUILD_RADIUS, 1.01, BUILD_RADIUS)
 
 
 func _process(dt: float):
@@ -97,8 +97,7 @@ func _process(dt: float):
 	if amounts != null:
 		$HUD.set_ore_amount(amounts.total_ore)
 
-		var remain = amounts.ore_fields_remaining_amounts
-		print("Remain: ", remain)
+		var remain = amounts.remaining_resource_amounts
 		for id in remain:
 			var oreAmount = remain[id]
 			var oreObj = instance_from_id(id)
@@ -159,7 +158,7 @@ func handleMouseInteraction():
 
 	# Hovering outside	
 	else:
-		$EffectRadius.visible = false
+		$SceneUi/EffectRadius.visible = false
 
 		var groundPosInRange = null
 		if selectedObj != null:
@@ -169,7 +168,7 @@ func handleMouseInteraction():
 
 		# De-selected (click on ground)
 		if Input.is_action_just_pressed("left_click"):
-			$BuildRadius.visible = false
+			$SceneUi/BuildRadius.visible = false
 			selectedObj = null
 			return
 
@@ -197,8 +196,8 @@ func updateSelected(obj) -> void:
 	obj.applyMaterial(matSelected)
 	selectedObj = obj
 
-	$BuildRadius.translation = obj.translation
-	$BuildRadius.visible = true
+	$SceneUi/BuildRadius.translation = obj.translation
+	$SceneUi/BuildRadius.visible = true
 
 	
 func updateHovered(obj) -> void:
@@ -212,9 +211,9 @@ func updateHovered(obj) -> void:
 		printerr("SHOULD NOT HAPPEN")
 		print("obj: ", obj)
 
-	$EffectRadius.translation = obj.translation
-	$EffectRadius.visible = true
-	$EffectRadius.scale = Vector3(queried.radius, 1.01, queried.radius)
+	$SceneUi/EffectRadius.translation = obj.translation
+	$SceneUi/EffectRadius.visible = true
+	$SceneUi/EffectRadius.scale = Vector3(queried.radius, 1.01, queried.radius)
 
 	for id in queried.affected_ids:
 		var node = instance_from_id(id)
