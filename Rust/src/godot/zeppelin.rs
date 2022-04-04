@@ -21,6 +21,8 @@ pub struct Zeppelin {
 	pub acc_factor: f32,
 	pub cam_acc_factor: f32,
 	pub cam_angle: Vector3,
+
+	understood: bool,
 }
 
 fn normalize_or_zero(v: Vector2) -> Vector2 {
@@ -45,6 +47,7 @@ impl Zeppelin {
 			cam_angle: Vector3::new(0.0, -7.0, -4.0),
 			cam_acc_factor: 3.0,
 			animated: None,
+			understood: false,
 		}
 	}
 
@@ -99,6 +102,14 @@ impl Zeppelin {
 	#[export]
 	fn _physics_process(&mut self, base: &Spatial, dt: f32) {
 		self.process_input();
+
+		// Hide if user understood it
+		if !self.understood && self.acceleration != Vector2::ZERO {
+			let node = get_node!(base, "../SceneUi/InitialTip", Control);
+			node.hide();
+			self.understood = true;
+		}
+
 		self.integrate_velocity(base, dt);
 		self.update_camera(base, dt);
 		self.rotate_pivot(dt);

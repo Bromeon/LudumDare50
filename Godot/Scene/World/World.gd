@@ -21,6 +21,7 @@ var matPowered: SpatialMaterial
 
 var lastHoveredObj: Spatial = null
 var selectedObj: Spatial = null
+var hasBuilt: bool = false
 
 onready var ghostsStc: Array = [$SceneUi/Ghosts/Pump, $SceneUi/Ghosts/Irrigation]
 onready var ghostPipe: Spatial = $SceneUi/Ghosts/Pipe
@@ -178,7 +179,10 @@ func handleMouseInteraction():
 				groundPosInRange = groundPos
 
 		else:
-			updateTooltip(null, "Left click: select building")
+			if hasBuilt:
+				updateTooltip(null, "Left click: select water or building")
+			else:
+				updateTooltip(null, "Left click: select water source")
 
 
 		# De-selected (click on ground)
@@ -203,6 +207,7 @@ func handleMouseInteraction():
 					updateSelected(instance_from_id(id))
 					
 					Sfx.placeItem()
+					hasBuilt = true
 			else:
 				Sfx.wrong()
 			return
@@ -299,8 +304,8 @@ func restartGame():
 		printerr("Error reloading game scene")
 
 
-func hideTooltip() -> void:
-	$SceneUi/Control/Label.text = ""
+# func hideTooltip() -> void:
+# 	$SceneUi/Control/Label.text = ""
 
 func updateTooltip(obj, tip = null) -> void:
 	var label = $SceneUi/Control/Label

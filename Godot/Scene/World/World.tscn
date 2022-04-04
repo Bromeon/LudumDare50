@@ -127,6 +127,20 @@ theme = ExtResource( 21 )
 text = "Some tip
 on multiple lines"
 
+[node name="InitialTip" type="Control" parent="SceneUi"]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="Label" type="Label" parent="SceneUi/InitialTip"]
+margin_right = 1208.0
+margin_bottom = 344.0
+theme = ExtResource( 21 )
+text = "Use WASD to steer the zeppelin.
+
+Find a water source, select it and build irrigation plants near ores. Pumps can extend the distance."
+align = 1
+valign = 1
+
 [node name="Zeppelin" parent="." instance=ExtResource( 4 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.97746, 0 )
 
