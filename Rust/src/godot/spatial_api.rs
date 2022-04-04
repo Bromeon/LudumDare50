@@ -455,7 +455,7 @@ impl SpatialApi {
 
 			let start_id = pipe.start_node_id();
 			let start_stc = *self.structures_by_id.get(&start_id).unwrap();
-			if start_stc.ty() == StructureType::Water {
+			if start_stc.ty() == StructureType::Water && start_stc.amount() > 0 {
 				powered_structures.insert(start_id, start_id); // water to itself
 				powered_pipes.insert(pipe_id);
 				graph_roots.push((pipe_id, start_id));
@@ -463,7 +463,7 @@ impl SpatialApi {
 
 			let end_id = pipe.end_node_id();
 			let end_stc = *self.structures_by_id.get(&end_id).unwrap();
-			if end_stc.ty() == StructureType::Water {
+			if end_stc.ty() == StructureType::Water && start_stc.amount() > 0 {
 				powered_structures.insert(end_id, end_id); // water to itself
 				powered_pipes.insert(pipe_id);
 				graph_roots.push((pipe_id, end_id));
@@ -484,6 +484,7 @@ impl SpatialApi {
 		}
 
 		// Apply changes to every structure
+		self.irrigators_by_powering_water.clear();
 		for stc in self.rtree.iter_mut() {
 			let id = stc.instance_id();
 			let powering_water = powered_structures.get(&id);
