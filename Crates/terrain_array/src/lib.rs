@@ -94,7 +94,15 @@ impl TerrainArray {
                         let dj = radius as isize - j as isize;
                         let dist_sq = (di * di + dj * dj) as usize;
                         if dist_sq <= radius * radius {
-                            *value = (fill - ((fill as f32) * ((dist_sq as f32).sqrt() / radius as f32)) as u8)
+                            if fill == CLEAN {
+                                *value = fill
+                                    + ((*value as f32) * ((dist_sq as f32).sqrt() / radius as f32))
+                                        as u8
+                            } else {
+                                *value = fill
+                                    - ((fill as f32) * ((dist_sq as f32).sqrt() / radius as f32))
+                                        as u8
+                            }
                         }
                     });
             }

@@ -1,18 +1,18 @@
 // Auto-generated; do not edit.
 
-mod add_structure;
-mod blight_update_result;
-mod query_result;
 mod spatial_api;
 mod terrain;
 mod zeppelin;
+mod add_structure;
+mod blight_update_result;
+mod query_result;
 
-pub use add_structure::*;
-pub use blight_update_result::*;
-pub use query_result::*;
 pub use spatial_api::*;
 pub use terrain::*;
 pub use zeppelin::*;
+pub use add_structure::*;
+pub use blight_update_result::*;
+pub use query_result::*;
 
 pub fn register_classes(handle: gdnative::init::InitHandle) {
 	handle.add_class::<SpatialApi>();
