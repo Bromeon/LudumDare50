@@ -3,9 +3,9 @@
 [ext_resource path="res://Assets/Fonts/Steamwreck.otf" type="DynamicFontData" id=1]
 
 [sub_resource type="DynamicFont" id=3]
-size = 24
+size = 28
 outline_size = 1
-outline_color = Color( 0.298039, 0.25098, 0.25098, 1 )
+outline_color = Color( 0.470588, 0.411765, 0.411765, 1 )
 font_data = ExtResource( 1 )
 
 [resource]

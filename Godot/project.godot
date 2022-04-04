@@ -62,7 +62,7 @@ _global_script_class_icons={
 
 [application]
 
-config/name="LudumDare50"
+config/name="LD50: Oasis of Lost Hope (v0.1)"
 run/main_scene="res://Scene/World/World.tscn"
 config/icon="res://icon.png"
 config/windows_native_icon="res://Icon.ico"
