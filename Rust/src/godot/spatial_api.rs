@@ -28,6 +28,8 @@ const WATER_TICK_FREQ: usize = 60;
 pub struct SpatialApi {
 	rtree: RTree<Structure>,
 	structures_by_id: HashMap<i64, Structure>,
+	/// Maps irrigators to their power source (Water structure)
+	irrigators_by_powering_water: HashMap<i64, i64>,
 	pipes: Vec<Pipe>,
 
 	terrain: Option<Instance<Terrain>>,
@@ -45,6 +47,7 @@ impl SpatialApi {
 		Self {
 			rtree: RTree::new(),
 			structures_by_id: HashMap::new(),
+			irrigators_by_powering_water: HashMap::new(),
 			pipes: Vec::new(),
 			terrain: None,
 			scenes: Dictionary::new_shared(),
@@ -67,7 +70,7 @@ impl SpatialApi {
 			let ty_name = if let Some(ty) = at_least_available.pop() {
 				ty
 			} else {
-				variants.into_iter().choose(&mut thread_rng()).unwrap();
+				variants.into_iter().choose(&mut thread_rng()).unwrap()
 			};
 
 			let stc = self.instance_structure(base, pos, ty_name);
@@ -83,8 +86,6 @@ impl SpatialApi {
 
 	fn instance_structure(&self, base: &Spatial, pos: Vector2, ty_name: &str) -> Structure {
 		let (instanced, id) = self.instance_scene(ty_name);
-
-		let node_id = instanced.get_instance_id();
 
 		instanced.set_translation(pos.to_3d());
 		instanced.set_scale(0.2 * Vector3::ONE);
@@ -265,7 +266,51 @@ impl SpatialApi {
 			return false;
 		}
 
+		// Changed in RTree, needs HashMap update
+		let mut structures_to_sync = vec![];
+
+		// Trace back each irrigator to its water source
+		for irrigator in self
+			.structures_by_id
+			.values()
+			.filter(|stc| Self::is_powered_irrigator(stc))
+		{
+			let water_id = self
+				.irrigators_by_powering_water
+				.get(&irrigator.instance_id())
+				.expect("Irrigator powered without water source");
+
+			// TODO again O(n^2)
+			// the RTree should only store position + ID (they don't change)
+			// all mutable attributes should be exclusively in the HashMap
+			// let water_stc = self.structures_by_id.get_mut(water_id).unwrap();
+			let mut water_in_rtree = None;
+			for stc in self.rtree.iter_mut() {
+				if stc.instance_id() == *water_id {
+					water_in_rtree = Some(stc);
+					break;
+				}
+			}
+			let water_in_rtree = water_in_rtree.expect("water field not stored in RTree");
+
+			let water_consumed = water_in_rtree.mine_amount(WATER_SPENT_PER_SECOND);
+			structures_to_sync.push(*water_in_rtree);
+
+			if water_consumed != 0 {
+				animated_positions.push(water_in_rtree.position());
+				animated_diffs.push(-water_consumed);
+
+				animated_positions.push(irrigator.position());
+				animated_diffs.push(water_consumed);
+			}
+		}
+
+		for water_in_rtree in structures_to_sync {
+			Self::sync_structure(water_in_rtree, &mut self.structures_by_id);
+		}
+
 		// Iterate connected waters
+		// TODO could also do changed only
 		for water in self.structures_by_id.values() {
 			if water.ty() != StructureType::Water {
 				continue;
@@ -275,6 +320,10 @@ impl SpatialApi {
 		}
 
 		true
+	}
+
+	fn is_powered_irrigator(stc: &Structure) -> bool {
+		stc.ty() == StructureType::Irrigation && stc.is_powered()
 	}
 
 	fn update_mining_amounts(
@@ -287,11 +336,13 @@ impl SpatialApi {
 			return false;
 		}
 
-		// Iterate irrigators
-		for irrigator in self.structures_by_id.values().filter(|stc| {
-			// Skip non-irrigators and inactive ones
-			stc.ty() == StructureType::Irrigation && stc.is_powered()
-		}) {
+		// Iterate irrigators (skip non-irrigators and inactive ones)
+
+		for irrigator in self
+			.structures_by_id
+			.values()
+			.filter(|stc| Self::is_powered_irrigator(stc))
+		{
 			let surrounding = Self::iter_structures_in_radius(
 				&mut self.rtree,
 				irrigator.position(),
@@ -381,7 +432,7 @@ impl SpatialApi {
 
 		// First, find all water spots connected to pipes
 		let mut visited_structures = HashSet::<i64>::new();
-		let mut powered_structures = HashSet::<i64>::new();
+		let mut powered_structures = HashMap::<i64, i64>::new(); // powered-stc mapped to original-water-id
 		let mut powered_pipes = HashSet::<i64>::new();
 		let mut graph_roots = Vec::new();
 
@@ -391,7 +442,7 @@ impl SpatialApi {
 			let start_id = pipe.start_node_id();
 			let start_stc = *self.structures_by_id.get(&start_id).unwrap();
 			if start_stc.ty() == StructureType::Water {
-				powered_structures.insert(start_id);
+				powered_structures.insert(start_id, start_id); // water to itself
 				powered_pipes.insert(pipe_id);
 				graph_roots.push((pipe_id, start_id));
 			}
@@ -399,16 +450,17 @@ impl SpatialApi {
 			let end_id = pipe.end_node_id();
 			let end_stc = *self.structures_by_id.get(&end_id).unwrap();
 			if end_stc.ty() == StructureType::Water {
-				powered_structures.insert(end_id);
+				powered_structures.insert(end_id, end_id); // water to itself
 				powered_pipes.insert(pipe_id);
 				graph_roots.push((pipe_id, end_id));
 			}
 		}
 
-		for (pipe_id, stc_id) in graph_roots {
+		for (pipe_id, water_id) in graph_roots {
 			Self::recurse_pipe_graph(
 				pipe_id,
-				stc_id,
+				water_id,
+				water_id,
 				&self.pipes,
 				&self.structures_by_id,
 				&mut powered_structures,
@@ -420,13 +472,18 @@ impl SpatialApi {
 		// Apply changes to every structure
 		for stc in self.rtree.iter_mut() {
 			let id = stc.instance_id();
-			let powered = powered_structures.contains(&id);
+			let powering_water = powered_structures.get(&id);
 
 			if !stc.can_be_powered() {
 				continue;
 			}
 
+			if let Some(water) = powering_water {
+				self.irrigators_by_powering_water.insert(id, *water);
+			}
+
 			// Update in 2 places (keep map and rtree in sync)
+			let powered = powering_water.is_some();
 			stc.set_powered(powered);
 			Self::sync_structure(*stc, &mut self.structures_by_id);
 			world.call("setPowered", &v![stc.instance_id(), powered]);
@@ -441,18 +498,13 @@ impl SpatialApi {
 		//println!("Done updating pipe network.\n");
 	}
 
-	// Synchronize changes from RTRee to HashMap
-	fn sync_structure(stc: Structure, structures_by_id: &mut HashMap<i64, Structure>) {
-		let stc_mut = structures_by_id.get_mut(&stc.instance_id()).unwrap();
-		*stc_mut = stc;
-	}
-
 	fn recurse_pipe_graph(
 		pipe_id: i64,
 		stc_id: i64,
+		original_water_id: i64, // backtrack where water comes from
 		pipes: &Vec<Pipe>,
 		structures_by_id: &HashMap<i64, Structure>,
-		powered_structures: &mut HashSet<i64>,
+		powered_structures: &mut HashMap<i64, i64>,
 		powered_pipes: &mut HashSet<i64>,
 		visited_structures: &mut HashSet<i64>,
 	) {
@@ -465,7 +517,7 @@ impl SpatialApi {
 		if stc.can_be_powered() {
 			//println!("    Power {stc_id}!");
 			powered_pipes.insert(pipe_id);
-			powered_structures.insert(stc_id);
+			powered_structures.insert(stc_id, original_water_id);
 		}
 
 		for (pipe_id, adjacent_id) in
@@ -475,6 +527,7 @@ impl SpatialApi {
 			Self::recurse_pipe_graph(
 				pipe_id,
 				adjacent_id,
+				original_water_id,
 				pipes,
 				structures_by_id,
 				powered_structures,
@@ -510,6 +563,12 @@ impl SpatialApi {
 		result
 	}
 
+	// Synchronize changes from RTRee to HashMap
+	fn sync_structure(stc: Structure, structures_by_id: &mut HashMap<i64, Structure>) {
+		let stc_mut = structures_by_id.get_mut(&stc.instance_id()).unwrap();
+		*stc_mut = stc;
+	}
+
 	#[export]
 	fn add_structure(&mut self, base: &Spatial, added: Instance<AddStructure>) -> i64 {
 		let added: AddStructure = added.map(|inst, _| inst.clone()).unwrap();
@@ -536,12 +595,12 @@ impl SpatialApi {
 	}
 
 	#[export]
-	fn can_consume_ore(&mut self, base: &Spatial, amt: i32) -> bool {
+	fn can_consume_ore(&mut self, _base: &Spatial, amt: i32) -> bool {
 		return self.ore_amount > amt;
 	}
 
 	#[export]
-	fn consume_ore(&mut self, base: &Spatial, amt: i32) {
+	fn consume_ore(&mut self, _base: &Spatial, amt: i32) {
 		self.ore_amount = (self.ore_amount - amt).max(0)
 	}
 }
