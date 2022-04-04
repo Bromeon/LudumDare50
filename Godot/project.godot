@@ -65,6 +65,7 @@ _global_script_class_icons={
 config/name="LudumDare50"
 run/main_scene="res://Scene/World/World.tscn"
 config/icon="res://icon.png"
+config/windows_native_icon="res://Icon.ico"
 
 [autoload]
 
