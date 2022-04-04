@@ -87,8 +87,9 @@ func _process(dt: float):
 		var node = instance_from_id(id)
 		node.queue_free()
 
-	$SpatialApi.update_amounts()
-	$HUD.set_ore_amount($SpatialApi.get_ore_amount())
+	var amounts = $SpatialApi.update_amounts()
+	if amounts != null:
+		$HUD.set_ore_amount(amounts.total_ore)
 
 
 

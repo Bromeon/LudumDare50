@@ -21,9 +21,6 @@ pub struct Structure {
 	amount: Option<u32>,
 }
 
-pub const IRRIGATION_CLEAN_RADIUS: f32 = 8.0;
-pub const WATER_CLEAN_RADIUS: f32 = 3.0;
-
 impl Structure {
 	pub fn new(ty: StructureType, position: Vector2, id: i64, health: f32) -> Structure {
 		Self {
@@ -49,10 +46,10 @@ impl Structure {
 	// When this building is powered, the
 	pub fn clean_radius(&self) -> Option<f32> {
 		match self.ty {
-			StructureType::Water => Some(WATER_CLEAN_RADIUS),
+			StructureType::Water => Some(3.0),
 			StructureType::Ore => None, // Doesn't clean
 			StructureType::Pump => None,
-			StructureType::Irrigation => Some(IRRIGATION_CLEAN_RADIUS),
+			StructureType::Irrigation => Some(8.0),
 		}
 	}
 
