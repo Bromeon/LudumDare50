@@ -692,6 +692,14 @@ impl SpatialApi {
 			"?".to_string()
 		}
 	}
+
+	#[export]
+	fn can_build_from(&self, _base: &Spatial, instance_id: i64) -> bool {
+		self.structures_by_id
+			.get(&instance_id)
+			.map(|s| s.ty() != StructureType::Ore)
+			.unwrap_or(false)
+	}
 }
 
 fn random_positions(n: usize) -> Vec<Vector2> {
